@@ -1,0 +1,36 @@
+{
+  "name": "axel-api",
+  "module": "index.ts",
+  "type": "module",
+  "scripts": {
+    "start": "bun run index.ts",
+    "dev": "bun run --watch index.ts",
+    "db:studio": "bunx drizzle-kit studio",
+    "db:generate": "bun drizzle-kit generate",
+    "db:pull": "bun drizzle-kit introspect",
+    "db:up": "bun drizzle-kit push",
+    "db:drop": "bun drizzle-kit drop"
+  },
+  "bun-create": {
+    "preinstall": "echo 'Installing...'",
+    "postinstall": ["echo 'Done!'"],
+    "start": "bun run echo 'Hello world!'"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.1.6",
+    "@types/figlet": "^1.5.8",
+    "drizzle-kit": "^0.22.8"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@hono/swagger-ui": "^0.3.0",
+    "@hono/zod-validator": "^0.2.2",
+    "drizzle-orm": "^0.31.2",
+    "figlet": "^1.7.0",
+    "hono": "^4.4.11",
+    "postgres": "^3.4.4",
+    "zod": "^3.23.8"
+  }
+}

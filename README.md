@@ -35,3 +35,4 @@ bun db:drop      //drop migration
 - [Hono](https://hono.dev/) | (4.4.11)
 - [Drizzle](https://orm.drizzle.team/) | (0.31.2)
 - [Zod](https://zod.dev/) | (3.23.8)
+- [Postgre](https://www.postgresql.org/) | (3.4.4)

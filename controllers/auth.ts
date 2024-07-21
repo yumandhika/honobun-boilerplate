@@ -7,6 +7,7 @@ import { takeUniqueOrThrow } from "../utils/helpers";
 import { envConfig } from "../config/config";
 import type { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
+import { rolesTable } from "../db/schema/roles";
 
 export const login = async (c: Context): Promise<Response> => {
   try {
@@ -56,7 +57,7 @@ export const login = async (c: Context): Promise<Response> => {
 
 export const register = async (c: Context): Promise<Response> => {
   try {
-    const { name, email, phone, password, role_id, company_branch_id, image, status } = await c.req.json();
+    const { name, email, phone, password, image, status } = await c.req.json();
 
     // Check if user already exists
     const existingUser = await db
@@ -73,6 +74,17 @@ export const register = async (c: Context): Promise<Response> => {
       return c.json({ message: 'User with this email already exists' });
     }
 
+    const roleResult = await db
+      .select()
+      .from(rolesTable)
+      .where(eq(rolesTable.name, 'customer'))
+      .then(results => {
+        if (results.length === 0) {
+          throw new Error('Role "customer" not found');
+        }
+        return results[0].id;
+      });
+
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -82,8 +94,7 @@ export const register = async (c: Context): Promise<Response> => {
       email,
       phone,
       password: hashedPassword,
-      role_id,
-      company_branch_id,
+      role_id : roleResult,
       image,
       status,
       createdAt: new Date(),
@@ -93,7 +104,7 @@ export const register = async (c: Context): Promise<Response> => {
     await db.insert(usersTable).values(newUser);
 
     c.status(201)
-    return c.json({ message: 'success create user' });
+    return c.json({ message: 'success register' });
 
   } catch (err) {
     throw new HTTPException(400, { 

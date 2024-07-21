@@ -13,8 +13,6 @@ export const registerSchema = z.object({
   email: z.string().email("Invalid email address"),
   phone: z.string().nonempty("Phone number is required"),
   password: z.string().min(6, "Password must be at least 6 characters long"),
-  role_id: z.string().uuid("Invalid role ID"),
-  company_branch_id: z.string().uuid("Invalid company branch ID"),
   image: z.string().url("Invalid image URL").optional(),
   status: z.string().optional()
 });

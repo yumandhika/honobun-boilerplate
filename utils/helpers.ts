@@ -42,3 +42,7 @@ export function formatZodError(error: z.ZodError) {
     message: issue.message
   }));
 }
+
+export const paginate = (query: any, limit: number, offset: number) => {
+  return query.limit(limit).offset(offset);
+};

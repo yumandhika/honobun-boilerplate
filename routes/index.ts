@@ -1,5 +1,5 @@
 import { Hono } from 'hono'
-import { usersRoute } from './users'
+import { authRoute } from './auth'
 
 export const Routes = new Hono()
-  .route('users', usersRoute)
+  .route('auth', authRoute)

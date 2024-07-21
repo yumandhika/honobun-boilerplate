@@ -13,13 +13,16 @@
   },
   "bun-create": {
     "preinstall": "echo 'Installing...'",
-    "postinstall": ["echo 'Done!'"],
+    "postinstall": [
+      "echo 'Done!'"
+    ],
     "start": "bun run echo 'Hello world!'"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
     "@types/bun": "^1.1.6",
     "@types/figlet": "^1.5.8",
+    "@types/uuid": "^10.0.0",
     "drizzle-kit": "^0.22.8"
   },
   "peerDependencies": {
@@ -33,6 +36,7 @@
     "figlet": "^1.7.0",
     "hono": "^4.4.11",
     "postgres": "^3.4.4",
+    "uuid": "^10.0.0",
     "zod": "^3.23.8"
   }
 }

@@ -10,5 +10,8 @@ export const envConfig = {
     username: process.env.DATABASE_POSTGRE_USERNAME,
     password: process.env.DATABASE_POSTGRE_PASSWORD,
     db_name: process.env.DATABASE_POSTGRE_NAME
+  },
+  jwt:{
+    secret: process.env.JWT_SECRET
   }
 }

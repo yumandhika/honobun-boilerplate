@@ -1,18 +1,22 @@
 export const roles = [
   {
-    label: 'super admin',
-    value: 'super-admin'
+    label: 'superadmin',
+    value: 'superadmin'
   },
   {
     label: 'admin',
     value: 'admin'
   },
   {
-    label: 'super visor',
-    value: 'super-visor'
+    label: 'supervisor',
+    value: 'supervisor'
   },
   {
     label: 'customer',
     value: 'customer'
+  },
+  {
+    label: 'mechanic',
+    value: 'mechanic'
   },
 ]

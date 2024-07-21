@@ -1,19 +1,16 @@
 import { pgTable, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
-import { rolesTable } from './roles';
+import { usersTable } from './users';
 
-export const usersTable = pgTable(
-  'users', 
+export const customerCarsTable = pgTable(
+  'customer_cars', 
   {
     id: uuid('id').primaryKey().defaultRandom(),
     image: varchar('image', { length: 256 }),
-    phone: varchar('phone', { length: 256 }),
+    plat_number: varchar('plat_number', { length: 256 }),
     name: varchar('name', { length: 256 }),
-    email: varchar('email', { length: 256 }).unique().notNull(),
-    password: varchar('password', { length: 100 }).notNull(),
-    status: varchar('status', { length: 50 }).default('active'),
+    car_date: varchar('car_date', { length: 256 }),
     // relations Table
-    company_branch_id: uuid('company_branch_id'),
-    role_id: uuid('role_id').references(() => rolesTable.id).notNull(), 
+    user_id: uuid('user_id').references(() => usersTable.id).notNull(), 
     // default
     deletedAt: timestamp('deleted_at'), // Nullable timestamp for soft delete
     createdAt: timestamp('created_at').defaultNow(), // Default to the current timestamp

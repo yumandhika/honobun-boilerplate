@@ -1,19 +1,13 @@
 import { pgTable, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
-import { rolesTable } from './roles';
+import { citiesTable } from './cities';
 
-export const usersTable = pgTable(
-  'users', 
+export const districtsTable = pgTable(
+  'districts', 
   {
     id: uuid('id').primaryKey().defaultRandom(),
-    image: varchar('image', { length: 256 }),
-    phone: varchar('phone', { length: 256 }),
     name: varchar('name', { length: 256 }),
-    email: varchar('email', { length: 256 }).unique().notNull(),
-    password: varchar('password', { length: 100 }).notNull(),
-    status: varchar('status', { length: 50 }).default('active'),
     // relations Table
-    company_branch_id: uuid('company_branch_id'),
-    role_id: uuid('role_id').references(() => rolesTable.id).notNull(), 
+    city_id: uuid('city_id').references(() => citiesTable.id).notNull(), 
     // default
     deletedAt: timestamp('deleted_at'), // Nullable timestamp for soft delete
     createdAt: timestamp('created_at').defaultNow(), // Default to the current timestamp

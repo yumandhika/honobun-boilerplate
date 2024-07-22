@@ -1,5 +1,5 @@
 {
-  "id": "203c1dbc-3cd5-4f6e-9efb-cfc160d77e46",
+  "id": "9e1e7e8f-0a67-4877-b342-a9fdf38b1014",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -205,8 +205,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "cities_id": {
-          "name": "cities_id",
+        "city_id": {
+          "name": "city_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -266,12 +266,12 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "customer_addresses_cities_id_cities_id_fk": {
-          "name": "customer_addresses_cities_id_cities_id_fk",
+        "customer_addresses_city_id_cities_id_fk": {
+          "name": "customer_addresses_city_id_cities_id_fk",
           "tableFrom": "customer_addresses",
           "tableTo": "cities",
           "columnsFrom": [
-            "cities_id"
+            "city_id"
           ],
           "columnsTo": [
             "id"

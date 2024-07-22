@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS "customer_addresses" (
 	"long" varchar(256),
 	"user_id" uuid NOT NULL,
 	"province_id" uuid NOT NULL,
-	"cities_id" uuid NOT NULL,
+	"city_id" uuid NOT NULL,
 	"district_id" uuid NOT NULL,
 	"deleted_at" timestamp,
 	"created_at" timestamp DEFAULT now(),
@@ -157,7 +157,7 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "customer_addresses" ADD CONSTRAINT "customer_addresses_cities_id_cities_id_fk" FOREIGN KEY ("cities_id") REFERENCES "public"."cities"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "customer_addresses" ADD CONSTRAINT "customer_addresses_city_id_cities_id_fk" FOREIGN KEY ("city_id") REFERENCES "public"."cities"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;

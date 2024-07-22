@@ -15,7 +15,7 @@ export const customerAddressesTable = pgTable(
     // relations Table
     user_id: uuid('user_id').references(() => usersTable.id).notNull(), 
     province_id: uuid('province_id').references(() => provincesTable.id).notNull(), 
-    city_id: uuid('cities_id').references(() => citiesTable.id).notNull(), 
+    city_id: uuid('city_id').references(() => citiesTable.id).notNull(), 
     district_id: uuid('district_id').references(() => districtsTable.id).notNull(), 
     // default
     deletedAt: timestamp('deleted_at'), // Nullable timestamp for soft delete

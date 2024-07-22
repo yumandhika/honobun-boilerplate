@@ -1,7 +1,7 @@
 import type { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { db } from "../db";
-import { paginate } from "../utils/helpers";
+import { paginate, successResponse } from "../utils/helpers";
 import { provincesTable } from "../db/schema/provinces";
 import { citiesTable } from "../db/schema/cities";
 import { eq } from "drizzle-orm";
@@ -15,8 +15,9 @@ export const getListProvince = async (c: Context): Promise<Response> => {
 
     const provinces = await paginate(db.select().from(provincesTable), limit, offset);
 
-    c.status(200);
-    return c.json({ data: provinces });
+    c.status(200)
+    return successResponse(c, provinces)
+
   } catch (err) {
     throw new HTTPException(400, { 
       message: 'Error fetching provinces',
@@ -38,8 +39,9 @@ export const getListCity = async (c: Context): Promise<Response> => {
 
     const cities = await paginate(citiesQuery, limit, offset);
 
-    c.status(200);
-    return c.json({ data: cities });
+    c.status(200)
+    return successResponse(c, cities)
+
   } catch (err) {
     throw new HTTPException(400, { 
       message: 'Error fetching cities',
@@ -61,8 +63,9 @@ export const getListDistrict = async (c: Context): Promise<Response> => {
 
     const districts = await paginate(districtsQuery, limit, offset);
 
-    c.status(200);
-    return c.json({ data: districts });
+    c.status(200)
+    return successResponse(c, districts)
+
   } catch (err) {
     throw new HTTPException(400, { 
       message: 'Error fetching districts',

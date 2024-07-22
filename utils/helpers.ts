@@ -1,34 +1,28 @@
 import type { z } from "zod"
-import type { ResponseMessage } from "../types/responseMessage"
+import type { Context } from "hono";
 
-export const responseHelper = {
-  success: (data: any = null, message: string = 'Success'): ResponseMessage => ({
-    status: 200,
+export const successResponse = (c: Context, data: any = {}, meta: any = {}) => {
+  const response = {
+    status: true,
+    data,
+    ...(Object.keys(meta).length > 0 && { meta }),
+  };
+  return c.json(response);
+};
+
+export const successMessageResponse = (c: Context, message: string) => {
+  return c.json({
+    status: true,
     message,
-    data
-  }),
+  });
+};
 
-  created: (data: any = null, message: string = 'Created'): ResponseMessage => ({
-    status: 201,
+export const errorResponse = (c: Context, message: string) => {
+  return c.json({
+    status: false,
     message,
-    data
-  }),
-
-  badRequest: (message: string = 'Bad Request'): ResponseMessage => ({
-    status: 400,
-    message
-  }),
-
-  notFound: (message: string = 'Not Found'): ResponseMessage => ({
-    status: 404,
-    message
-  }),
-
-  serverError: (message: string = 'Internal Server Error'): ResponseMessage => ({
-    status: 500,
-    message
-  })
-}
+  });
+};
 
 export const takeUniqueOrThrow = <T extends any[]>(values: T): T[number] => {
   if (values.length == 0 ) return null;

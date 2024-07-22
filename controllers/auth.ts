@@ -3,7 +3,7 @@ import { db } from "../db";
 import { usersTable } from "../db/schema/users";
 import bcrypt from 'bcrypt';
 import { sign } from 'hono/jwt'
-import { takeUniqueOrThrow } from "../utils/helpers";
+import { errorResponse, successMessageResponse, successResponse, takeUniqueOrThrow } from "../utils/helpers";
 import { envConfig } from "../config/config";
 import type { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
@@ -25,14 +25,14 @@ export const login = async (c: Context): Promise<Response> => {
 
     if (!user) {
       c.status(400)
-      return c.json({message: 'user not found'})
+      return errorResponse(c, 'user not found')
     }
 
     // Password Verification
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       c.status(400)
-      return c.json({message: 'invalid password'})
+      return errorResponse(c, 'invalid password')
     }
 
     const payload = {
@@ -44,8 +44,8 @@ export const login = async (c: Context): Promise<Response> => {
 
     // Get token
     const token = await sign(payload, envConfig.jwt.secret ?? 'secret');
-
-    return c.json({token, payload})
+    
+    return successResponse(c, {token})
     
   } catch (err) {
     throw new HTTPException(400, { 
@@ -70,8 +70,8 @@ export const register = async (c: Context): Promise<Response> => {
       .then(user => user.length > 0 ? user[0] : null);
 
     if (existingUser) {
-      c.status(400);
-      return c.json({ message: 'User with this email already exists' });
+      c.status(400)
+      return errorResponse(c, 'User with this email already exists')
     }
 
     const roleResult = await db
@@ -104,7 +104,7 @@ export const register = async (c: Context): Promise<Response> => {
     await db.insert(usersTable).values(newUser);
 
     c.status(201)
-    return c.json({ message: 'success register' });
+    return successMessageResponse(c, 'success register')
 
   } catch (err) {
     throw new HTTPException(400, { 

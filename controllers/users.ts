@@ -3,7 +3,7 @@ import { db } from "../db";
 import type { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { usersTable } from "../db/schema/users";
-import { paginate } from "../utils/helpers";
+import { errorResponse, paginate, successMessageResponse, successResponse } from "../utils/helpers";
 import { rolesTable } from "../db/schema/roles";
 import bcrypt from 'bcrypt';
 
@@ -17,8 +17,9 @@ export const getListUsers = async (c: Context): Promise<Response> => {
     .where(not(eq(rolesTable.name, 'customer')));
     const users = await paginate(usersQuery, limit, offset);
 
-    c.status(200);
-    return c.json({ data: users });
+    c.status(200)
+    return successResponse(c, users)
+    
   } catch (err) {
     console.log(err)
     throw new HTTPException(400, { 
@@ -43,8 +44,8 @@ export const createUser = async (c: Context): Promise<Response> => {
       .then(user => user.length > 0 ? user[0] : null);
 
     if (existingUser) {
-      c.status(400);
-      return c.json({ message: 'User with this email already exists' });
+      c.status(400)
+      return errorResponse(c, 'User with this email already exists')
     }
 
     // Hash password
@@ -67,7 +68,7 @@ export const createUser = async (c: Context): Promise<Response> => {
     await db.insert(usersTable).values(newUser);
 
     c.status(201)
-    return c.json({ message: 'success create user' });
+    return successMessageResponse(c, 'success create user')
 
   } catch (err) {
     throw new HTTPException(400, { 
@@ -90,8 +91,8 @@ export const updateUser = async (c: Context): Promise<Response> => {
       .then(user => user.length > 0 ? user[0] : null);
 
     if (!existingUser) {
-      c.status(404);
-      return c.json({ message: 'User not found' });
+      c.status(404)
+      return errorResponse(c, 'User not found')
     }
 
     // Check for email or phone duplication
@@ -107,8 +108,8 @@ export const updateUser = async (c: Context): Promise<Response> => {
       .then(users => users.find(user => user.id !== userId));
 
     if (duplicateUser) {
-      c.status(400);
-      return c.json({ message: 'Email or phone number already in use' });
+      c.status(400)
+      return errorResponse(c, 'Email or phone number already in use')
     }
 
     let updatedUser = {
@@ -134,8 +135,8 @@ export const updateUser = async (c: Context): Promise<Response> => {
       .set(updatedUser)
       .where(eq(usersTable.id, userId));
 
-    c.status(200);
-    return c.json({ message: 'User updated successfully' });
+    c.status(200)
+    return successMessageResponse(c, 'User updated successfully')
 
   } catch (err) {
     throw new HTTPException(400, { 

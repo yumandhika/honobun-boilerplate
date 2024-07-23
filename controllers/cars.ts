@@ -1,21 +1,23 @@
 import type { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
-import {paginate, successMessageResponse, successResponse } from "../utils/helpers";
+import {paginate, successMessageResponse, successResponse, takeUniqueOrThrow } from "../utils/helpers";
 import { customerCarsTable } from "../db/schema/customer-cars";
 import { db } from "../db";
-import { eq } from "drizzle-orm";
+import { count, eq } from "drizzle-orm";
 
 export const getListCustomerCars = async (c: Context): Promise<Response> => {
   try {
     
     const limit = parseInt(c.req.query("limit") || "10");
     const offset = parseInt(c.req.query("offset") || "0");
+    const currentPage = Math.floor(offset / limit) + 1;
 
     const carsQuery = db.select().from(customerCarsTable);
+    const totalAddress = await db.select({ count: count() }).from(customerCarsTable).then(takeUniqueOrThrow)
     const cars = await paginate(carsQuery, limit, offset);
 
     c.status(200)
-    return successResponse(c, cars)
+    return successResponse(c, cars, {currentPage, total: totalAddress?.count ?? 0, limit, offset})
     
   } catch (err) {
     console.log(err)

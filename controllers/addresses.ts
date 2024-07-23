@@ -1,21 +1,23 @@
 import type { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
-import {paginate, successMessageResponse, successResponse } from "../utils/helpers";
+import {paginate, successMessageResponse, successResponse, takeUniqueOrThrow } from "../utils/helpers";
 import { customerAddressesTable } from "../db/schema/customer-addresses";
 import { db } from "../db";
-import { eq } from "drizzle-orm";
+import { count, eq } from "drizzle-orm";
 
 export const getListCustomerAddresses = async (c: Context): Promise<Response> => {
   try {
     
     const limit = parseInt(c.req.query("limit") || "10");
     const offset = parseInt(c.req.query("offset") || "0");
+    const currentPage = Math.floor(offset / limit) + 1;
 
     const addressesQuery = db.select().from(customerAddressesTable);
+    const totalAddress = await db.select({ count: count() }).from(customerAddressesTable).then(takeUniqueOrThrow)
     const addresses = await paginate(addressesQuery, limit, offset);
 
     c.status(200)
-    return successResponse(c, addresses)
+    return successResponse(c, addresses, {currentPage, total: totalAddress?.count ?? 0, limit, offset})
     
   } catch (err) {
     console.log(err)

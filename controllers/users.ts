@@ -1,9 +1,9 @@
-import { eq, not, or } from "drizzle-orm";
+import { count, eq, not, or } from "drizzle-orm";
 import { db } from "../db";
 import type { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { usersTable } from "../db/schema/users";
-import { errorResponse, paginate, successMessageResponse, successResponse } from "../utils/helpers";
+import { errorResponse, paginate, successMessageResponse, successResponse, takeUniqueOrThrow } from "../utils/helpers";
 import { rolesTable } from "../db/schema/roles";
 import bcrypt from 'bcrypt';
 
@@ -11,14 +11,29 @@ export const getListUsers = async (c: Context): Promise<Response> => {
   try {
     const limit = parseInt(c.req.query("limit") || "10");
     const offset = parseInt(c.req.query("offset") || "0");
+    const currentPage = Math.floor(offset / limit) + 1;
 
-    const usersQuery = db.select().from(usersTable)
+    const usersQuery = db.select({
+      users: usersTable,
+      roles: rolesTable,
+    })
+    .from(usersTable)
     .leftJoin(rolesTable, eq(usersTable.role_id, rolesTable.id))
     .where(not(eq(rolesTable.name, 'customer')));
+
+    const totalUsers = await db.select({ count: count() }).from(usersTable)
+    .leftJoin(rolesTable, eq(usersTable.role_id, rolesTable.id))
+    .where(not(eq(rolesTable.name, 'customer'))).then(takeUniqueOrThrow);
+
     const users = await paginate(usersQuery, limit, offset);
+    
+    const formattedUsers = users.map((user: { users: any; roles: any; }) => ({
+      ...user.users,
+      roles: user.roles
+    }));
 
     c.status(200)
-    return successResponse(c, users)
+    return successResponse(c, formattedUsers, {currentPage, total: totalUsers?.count ?? 0, limit, offset})
     
   } catch (err) {
     console.log(err)

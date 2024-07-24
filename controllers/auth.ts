@@ -70,15 +70,21 @@ export const login = async (c: Context): Promise<Response> => {
 export const register = async (c: Context): Promise<Response> => {
   try {
     const { name, email, phone, password, image, status } = await c.req.json();
+    
+    const conditions = [];
 
+    if (email) {
+      conditions.push(eq(usersTable.email, email));
+    }
+  
+    if (phone) {
+      conditions.push(eq(usersTable.phone, phone));
+    }
     // Check if user already exists
     const existingUser = await db
       .select()
       .from(usersTable)
-      .where(or(
-        eq(usersTable.email, email),
-        eq(usersTable.phone, phone)
-      ))
+      .where(or(...conditions))
       .then(user => user.length > 0 ? user[0] : null);
 
     if (existingUser) {
@@ -119,6 +125,7 @@ export const register = async (c: Context): Promise<Response> => {
     return successMessageResponse(c, 'success register')
 
   } catch (err) {
+    console.log(err)
     throw new HTTPException(400, { 
       message: 'Error registering user',
       cause: err

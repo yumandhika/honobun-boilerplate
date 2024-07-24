@@ -8,6 +8,13 @@
       "when": 1721660007098,
       "tag": "0000_majestic_maggott",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1721843545131,
+      "tag": "0001_shocking_speed_demon",
+      "breakpoints": true
     }
   ]
 }

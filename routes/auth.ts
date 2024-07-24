@@ -10,10 +10,8 @@ export const loginSchema = z.object({
 
 export const registerSchema = z.object({
   name: z.string().nonempty("Name is required"),
-  email: z.string().optional(),
   phone: z.string().nonempty("Phone number is required"),
   password: z.string().min(6, "Password must be at least 6 characters long"),
-  image: z.string().optional(),
   status: z.string().optional()
 });
 

@@ -8,7 +8,7 @@ export const usersTable = pgTable(
     image: varchar('image', { length: 256 }),
     phone: varchar('phone', { length: 256 }),
     name: varchar('name', { length: 256 }),
-    email: varchar('email', { length: 256 }).unique().notNull(),
+    email: varchar('email', { length: 256 }),
     password: varchar('password', { length: 100 }).notNull(),
     status: varchar('status', { length: 50 }).default('active'),
     // relations Table

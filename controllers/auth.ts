@@ -42,11 +42,15 @@ export const login = async (c: Context): Promise<Response> => {
       c.status(400)
       return errorResponse(c, 'invalid password')
     }
+    const roleResult = await db
+      .select()
+      .from(rolesTable)
+      .where(eq(rolesTable.id, user.role_id)).then(takeUniqueOrThrow)
 
     const payload = {
       userId: user.id,
-      role: user.role_id,
-      user: user,
+      role: roleResult.name,
+      ...user,
       exp: Math.floor(Date.now() / 1000) + 60 * 5, // Token expires in 5 minutes
     }
 

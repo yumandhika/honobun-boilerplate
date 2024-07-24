@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import { createUser, getListUsers, updateUser } from '../controllers/users';
 import { z } from 'zod';
 import { zValidator } from '@hono/zod-validator';
+import { authenticateJWT } from '../middlewares/auth.middlewares';
 
 export const postUserSchema = z.object({
   name: z.string().nonempty("Name is required"),
@@ -26,6 +27,6 @@ export const updateUserSchema = z.object({
 });
 
 export const usersRoute = new Hono()
-  .get('/', getListUsers)
-  .post('/', zValidator('json', postUserSchema), createUser)
-  .put('/:id', zValidator('json', updateUserSchema), updateUser)
+  .get('/', authenticateJWT(['admin', 'supervisor', 'superadmin']), getListUsers)
+  .post('/', authenticateJWT(['admin', 'supervisor', 'superadmin']), zValidator('json', postUserSchema), createUser)
+  .put('/:id', authenticateJWT(['admin', 'supervisor', 'superadmin']), zValidator('json', updateUserSchema), updateUser)

@@ -11,6 +11,7 @@ export const usersTable = pgTable(
     email: varchar('email', { length: 256 }),
     password: varchar('password', { length: 100 }).notNull(),
     status: varchar('status', { length: 50 }).default('active'),
+    fcm_token: varchar('fcm_token', { length: 256 }).array(),
     // relations Table
     company_branch_id: uuid('company_branch_id'),
     role_id: uuid('role_id').references(() => rolesTable.id).notNull(), 

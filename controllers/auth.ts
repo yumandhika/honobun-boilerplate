@@ -69,7 +69,7 @@ export const login = async (c: Context): Promise<Response> => {
 
 export const register = async (c: Context): Promise<Response> => {
   try {
-    const { name, email, phone, password, image, status } = await c.req.json();
+    const { name, email, phone, password, image, status, fcm_token } = await c.req.json();
     
     const conditions = [];
 
@@ -115,6 +115,7 @@ export const register = async (c: Context): Promise<Response> => {
       role_id : roleResult,
       image,
       status,
+      fcm_token,
       createdAt: new Date(),
       updatedAt: new Date()
     };

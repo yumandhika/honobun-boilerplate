@@ -5,6 +5,7 @@ import { usersRoute } from './users'
 import { addressesRoute } from './address'
 import { carsRoute} from './cars'
 import { carShopsRoute } from './carshops'
+import { ordersRoute } from './orders'
 
 export const Routes = new Hono()
   .route('auth', authRoute)
@@ -13,3 +14,4 @@ export const Routes = new Hono()
   .route('addresses', addressesRoute)
   .route('cars', carsRoute)
   .route('carshops', carShopsRoute)
+  .route('orders', ordersRoute)

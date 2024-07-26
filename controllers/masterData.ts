@@ -6,6 +6,7 @@ import { provincesTable } from "../db/schema/provinces";
 import { citiesTable } from "../db/schema/cities";
 import { eq } from "drizzle-orm";
 import { districtsTable } from "../db/schema/districts";
+import { rolesTable } from "../db/schema/roles";
 
 
 export const getListProvince = async (c: Context): Promise<Response> => {
@@ -65,6 +66,22 @@ export const getListDistrict = async (c: Context): Promise<Response> => {
 
     c.status(200)
     return successResponse(c, districts)
+
+  } catch (err) {
+    throw new HTTPException(400, { 
+      message: 'Error fetching districts',
+      cause: err
+    });
+  }
+}
+
+export const getListRole = async (c: Context): Promise<Response> => {
+  try {
+
+    const roles = await db.select().from(rolesTable);
+
+    c.status(200)
+    return successResponse(c, roles)
 
   } catch (err) {
     throw new HTTPException(400, { 

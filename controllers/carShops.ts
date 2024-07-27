@@ -32,12 +32,13 @@ export const getListCarShops = async (c: Context): Promise<Response> => {
 export const createCarShops = async (c: Context): Promise<Response> => {
   try {
 
-    const { name, description, address, lat, long, open_time, close_time, day, image } = await c.req.json();
+    const { name, description, address, phone, lat, long, open_time, close_time, day, image } = await c.req.json();
     
     const nCC = {
       name, 
       description, 
       address, 
+      phone,
       lat, 
       long, 
       open_time, 
@@ -65,12 +66,13 @@ export const createCarShops = async (c: Context): Promise<Response> => {
 export const updateCarShops = async (c: Context): Promise<Response> => {
   try {
     const carshopsId = c.req.param("id");
-    const { name, description, address, lat, long, open_time, close_time, day, image } = await c.req.json();
+    const { name, description, address, phone, lat, long, open_time, close_time, day, image } = await c.req.json();
     
     const uCC = {
       name, 
       description, 
       address, 
+      phone,
       lat, 
       long, 
       open_time, 

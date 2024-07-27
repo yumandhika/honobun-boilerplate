@@ -6,6 +6,7 @@ export const companyBranchTable = pgTable(
     id: uuid('id').primaryKey().defaultRandom(),
     name: varchar('name', { length: 256 }),
     description: varchar('description', { length: 256 }),
+    phone: varchar('phone', { length: 256 }),
     address: varchar('address', { length: 256 }),
     lat: varchar('lat', { length: 256 }),
     long: varchar('long', { length: 256 }),

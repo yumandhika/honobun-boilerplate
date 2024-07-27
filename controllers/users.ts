@@ -6,6 +6,7 @@ import { usersTable } from "../db/schema/users";
 import { errorResponse, paginate, successMessageResponse, successResponse, takeUniqueOrThrow } from "../utils/helpers";
 import { rolesTable } from "../db/schema/roles";
 import bcrypt from 'bcrypt';
+import { companyBranchTable } from "../db/schema/company-branch";
 
 export const getListUsers = async (c: Context): Promise<Response> => {
   try {
@@ -36,20 +37,26 @@ export const getListUsers = async (c: Context): Promise<Response> => {
     let usersQuery = db.select({
       users: usersTable,
       roles: rolesTable,
+      companyBranch: companyBranchTable,
     })
     .from(usersTable)
     .leftJoin(rolesTable, eq(usersTable.role_id, rolesTable.id))
+    .leftJoin(companyBranchTable, eq(usersTable.company_branch_id, companyBranchTable.id))
     .where(and(...conditions))
 
     const totalUsers = await db.select({ count: count() }).from(usersTable)
     .leftJoin(rolesTable, eq(usersTable.role_id, rolesTable.id))
+    .leftJoin(companyBranchTable, eq(usersTable.company_branch_id, companyBranchTable.id))
     .where(and(...conditions)).then(takeUniqueOrThrow);
 
     const users = await paginate(usersQuery, limit, offset);
     
-    const formattedUsers = users.map((user: { users: any; roles: any; }) => ({
+    console.log(users)
+
+    const formattedUsers = users.map((user: { users: any; roles: any; companyBranch: any; }) => ({
       ...user.users,
-      roles: user.roles
+      roles: user.roles,
+      companyBranch: user.companyBranch
     }));
 
     c.status(200)

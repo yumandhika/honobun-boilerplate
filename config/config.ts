@@ -11,6 +11,11 @@ export const envConfig = {
     password: process.env.DATABASE_POSTGRE_PASSWORD,
     db_name: process.env.DATABASE_POSTGRE_NAME
   },
+  imgur:{
+    url: process.env.IMGUR_API_URL,
+    client_id: process.env.IMGUR_CLIENT_ID,
+    client_secret: process.env.IMGUR_CLIENT_SECRET,
+  },
   jwt:{
     secret: process.env.JWT_SECRET
   }

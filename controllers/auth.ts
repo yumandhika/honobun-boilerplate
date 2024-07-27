@@ -8,18 +8,10 @@ import { envConfig } from "../config/config";
 import type { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { rolesTable } from "../db/schema/roles";
-import { FcmMessage } from "../services/fcm.service";
 
 export const login = async (c: Context): Promise<Response> => {
   try {
     const {emailOrPhone, password} = await c.req.json();
-
-    FcmMessage({
-      title: 'test title axel api',
-      description: 'test descriptions axel api',
-      token: 'f0BhLwYgR7mqb3oO6Ocg6M:APA91bHWET1UsqyGGgDKDfgZU2IZzvAz0AMk-Hj4vcH1GY66kzzu1PcUjpX4-mB5KBIsRsd7-dUKkMHtaSPMV5NpcknQlwDaV1sM6pzB_opwTWUJk7mtXdT2yZJYR0eh-yyBrpqPFoGp',
-      data: {},
-    })
 
     // Find Users
     const user = await db
@@ -57,7 +49,7 @@ export const login = async (c: Context): Promise<Response> => {
     // Get token
     const token = await sign(payload, envConfig.jwt.secret ?? 'secret');
     
-    return successResponse(c, {token})
+    return successResponse(c, {token, ...user})
     
   } catch (err) {
     throw new HTTPException(400, { 

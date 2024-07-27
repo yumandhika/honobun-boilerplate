@@ -31,7 +31,7 @@ export const getListCustomerAddresses = async (c: Context): Promise<Response> =>
 export const createCustomerAddress = async (c: Context): Promise<Response> => {
   try {
 
-    const { title, description, lat, long, user_id, province_id, city_id, district_id } = await c.req.json();
+    const { title, description, lat, long, user_id, address } = await c.req.json();
     
     const nCA = {
       title, 
@@ -39,9 +39,7 @@ export const createCustomerAddress = async (c: Context): Promise<Response> => {
       lat, 
       long, 
       user_id, 
-      province_id, 
-      city_id, 
-      district_id,
+      address,
       createdAt: new Date(),
       updatedAt: new Date()
     };
@@ -63,16 +61,14 @@ export const createCustomerAddress = async (c: Context): Promise<Response> => {
 export const updateCustomerAddress = async (c: Context): Promise<Response> => {
   try {
     const addressId = c.req.param("id");
-    const { title, description, lat, long, province_id, city_id, district_id } = await c.req.json();
+    const { title, description, lat, long, address } = await c.req.json();
     
     const uCA = {
       title, 
       description, 
       lat, 
-      long, 
-      province_id, 
-      city_id, 
-      district_id,
+      long,
+      address,
       updatedAt: new Date()
     };
 

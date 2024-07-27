@@ -3,16 +3,24 @@ import { HTTPException } from "hono/http-exception";
 import {paginate, successMessageResponse, successResponse, takeUniqueOrThrow } from "../utils/helpers";
 import { customerAddressesTable } from "../db/schema/customer-addresses";
 import { db } from "../db";
-import { count, eq } from "drizzle-orm";
+import { count, eq, or } from "drizzle-orm";
 
 export const getListCustomerAddresses = async (c: Context): Promise<Response> => {
   try {
     
+    const conditions = [];
     const limit = parseInt(c.req.query("limit") || "10");
     const offset = parseInt(c.req.query("offset") || "0");
+
+    const user_id: any = c.req.query("user_id") || null;
+
+    if (user_id) {
+      conditions.push(eq(customerAddressesTable.user_id, user_id));
+    }
+
     const currentPage = Math.floor(offset / limit) + 1;
 
-    const addressesQuery = db.select().from(customerAddressesTable);
+    const addressesQuery = db.select().from(customerAddressesTable).where(or(...conditions));
     const totalAddress = await db.select({ count: count() }).from(customerAddressesTable).then(takeUniqueOrThrow)
     const addresses = await paginate(addressesQuery, limit, offset);
 

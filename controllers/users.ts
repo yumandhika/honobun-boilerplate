@@ -1,4 +1,4 @@
-import { count, eq, not, or } from "drizzle-orm";
+import { and, count, eq, ilike, inArray, not, or, sql } from "drizzle-orm";
 import { db } from "../db";
 import type { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
@@ -9,21 +9,41 @@ import bcrypt from 'bcrypt';
 
 export const getListUsers = async (c: Context): Promise<Response> => {
   try {
+
     const limit = parseInt(c.req.query("limit") || "10");
     const offset = parseInt(c.req.query("offset") || "0");
+
+    const search = c.req.query("search") || null;
+    const roles: any = c.req.query("roles") ? c.req.query("roles") : null; // array of role names
+    const splitedRoles = roles ? roles.split(',') : null;
     const currentPage = Math.floor(offset / limit) + 1;
 
-    const usersQuery = db.select({
+    let conditions = [];
+    
+    if (search) {
+      conditions.push(
+        or(
+          ilike(usersTable.name, `%${search}%`),
+          ilike(usersTable.email, `%${search}%`)
+        )
+      );
+    }
+
+    if (splitedRoles && splitedRoles.length > 0) {
+      conditions.push(inArray(rolesTable.name, splitedRoles));
+    }
+
+    let usersQuery = db.select({
       users: usersTable,
       roles: rolesTable,
     })
     .from(usersTable)
     .leftJoin(rolesTable, eq(usersTable.role_id, rolesTable.id))
-    .where(not(eq(rolesTable.name, 'customer')));
+    .where(and(...conditions))
 
     const totalUsers = await db.select({ count: count() }).from(usersTable)
     .leftJoin(rolesTable, eq(usersTable.role_id, rolesTable.id))
-    .where(not(eq(rolesTable.name, 'customer'))).then(takeUniqueOrThrow);
+    .where(and(...conditions)).then(takeUniqueOrThrow);
 
     const users = await paginate(usersQuery, limit, offset);
     

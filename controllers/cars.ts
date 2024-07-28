@@ -85,3 +85,21 @@ export const updateCustomerCar = async (c: Context): Promise<Response> => {
     });
   }
 };
+
+export const deleteCar = async (c: Context): Promise<Response> => {
+  try {
+    const carId = c.req.param("id");
+
+    await db
+      .delete(customerCarsTable)
+      .where(eq(customerCarsTable.id, carId));
+
+    c.status(200)
+    return successMessageResponse(c, 'car deleted successfully')
+  } catch (err) {
+    throw new HTTPException(400, {
+      message: 'Error deleting car',
+      cause: err
+    });
+  }
+};

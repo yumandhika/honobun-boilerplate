@@ -95,3 +95,21 @@ export const updateCustomerAddress = async (c: Context): Promise<Response> => {
     });
   }
 };
+
+export const deleteAddress = async (c: Context): Promise<Response> => {
+  try {
+    const addressId = c.req.param("id");
+
+    await db
+      .delete(customerAddressesTable)
+      .where(eq(customerAddressesTable.id, addressId));
+
+    c.status(200)
+    return successMessageResponse(c, 'Address deleted successfully')
+  } catch (err) {
+    throw new HTTPException(400, {
+      message: 'Error deleting Address',
+      cause: err
+    });
+  }
+};

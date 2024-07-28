@@ -97,3 +97,21 @@ export const updateCarShops = async (c: Context): Promise<Response> => {
     });
   }
 };
+
+export const deleteCarShops = async (c: Context): Promise<Response> => {
+  try {
+    const carshopsId = c.req.param("id");
+
+    await db
+      .delete(companyBranchTable)
+      .where(eq(companyBranchTable.id, carshopsId));
+
+    c.status(200)
+    return successMessageResponse(c, 'carshops deleted successfully')
+  } catch (err) {
+    throw new HTTPException(400, {
+      message: 'Error deleting carshops',
+      cause: err
+    });
+  }
+};

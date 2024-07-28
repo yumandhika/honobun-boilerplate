@@ -1,0 +1,1 @@
+ALTER TABLE "orders" ALTER COLUMN "customer_address" SET DATA TYPE varchar(256);

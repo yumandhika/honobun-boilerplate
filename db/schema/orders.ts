@@ -13,7 +13,7 @@ export const ordersTable = pgTable(
     car_name: varchar('car_name', { length: 256 }),
     car_image: varchar('car_image', { length: 256 }),
     mechanic_name: varchar('mechanic_name', { length: 256 }),
-    customer_address: jsonb('customer_address'),
+    customer_address: varchar('customer_address', { length: 256 }),
     service_type: varchar('service_type', { length: 256 }), // enum mechanic-pickup and self-deliver
     description: varchar('description', { length: 256 }),
     distance: numeric('distance'), // Changed to numeric

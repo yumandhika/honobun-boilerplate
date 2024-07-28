@@ -3,17 +3,25 @@ import { HTTPException } from "hono/http-exception";
 import {paginate, successMessageResponse, successResponse, takeUniqueOrThrow } from "../utils/helpers";
 import { customerCarsTable } from "../db/schema/customer-cars";
 import { db } from "../db";
-import { count, eq } from "drizzle-orm";
+import { count, eq, or } from "drizzle-orm";
 
 export const getListCustomerCars = async (c: Context): Promise<Response> => {
   try {
     
+    const conditions = [];
+
     const limit = parseInt(c.req.query("limit") || "10");
     const offset = parseInt(c.req.query("offset") || "0");
     const currentPage = Math.floor(offset / limit) + 1;
 
-    const carsQuery = db.select().from(customerCarsTable);
-    const totalAddress = await db.select({ count: count() }).from(customerCarsTable).then(takeUniqueOrThrow)
+    const user_id: any = c.req.query("user_id") || null;
+
+    if (user_id) {
+      conditions.push(eq(customerCarsTable.user_id, user_id));
+    }
+
+    const carsQuery = db.select().from(customerCarsTable).where(or(...conditions));
+    const totalAddress = await db.select({ count: count() }).from(customerCarsTable).where(or(...conditions)).then(takeUniqueOrThrow)
     const cars = await paginate(carsQuery, limit, offset);
 
     c.status(200)

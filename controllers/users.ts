@@ -202,3 +202,69 @@ export const updateUser = async (c: Context): Promise<Response> => {
     });
   }
 };
+
+export const updateUserCustomer = async (c: Context): Promise<Response> => {
+  try {
+    const userId = c.req.param("id");
+    const { name, email = null, phone, password, image } = await c.req.json();
+
+    // Fetch existing user
+    const existingUser = await db
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.id, userId))
+      .then(user => user.length > 0 ? user[0] : null);
+
+    if (!existingUser) {
+      c.status(404)
+      return errorResponse(c, 'User customer not found')
+    }
+
+    // Check for email or phone duplication
+    const duplicateUser = await db
+      .select()
+      .from(usersTable)
+      .where(
+        or(
+          eq(usersTable.email, email),
+          eq(usersTable.phone, phone)
+        )
+      )
+      .then(users => users.find(user => user.id !== userId));
+
+    if (duplicateUser) {
+      c.status(400)
+      return errorResponse(c, 'Email or phone number already in use')
+    }
+
+    let updatedUser = {
+      name,
+      email,
+      phone,
+      password: existingUser.password,
+      image,
+      updatedAt: new Date()
+    };
+
+    // Hash password if it's being updated
+    if (password) {
+      updatedUser.password = await bcrypt.hash(password, 10);
+    }
+
+    // Update user in the database
+    await db
+      .update(usersTable)
+      .set(updatedUser)
+      .where(eq(usersTable.id, userId));
+
+    c.status(200)
+    return successMessageResponse(c, 'User customer updated successfully')
+
+  } catch (err) {
+    console.log(err)
+    throw new HTTPException(400, { 
+      message: 'Error updating user',
+      cause: err
+    });
+  }
+};

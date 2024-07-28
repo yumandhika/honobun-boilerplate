@@ -1,5 +1,5 @@
 import { Hono } from 'hono'
-import { createUser, getListUsers, updateUser } from '../controllers/users';
+import { createUser, getListUsers, updateUser, updateUserCustomer } from '../controllers/users';
 import { z } from 'zod';
 import { zValidator } from '@hono/zod-validator';
 import { authenticateJWT } from '../middlewares/auth.middlewares';
@@ -30,3 +30,4 @@ export const usersRoute = new Hono()
   .get('/', authenticateJWT(['admin', 'supervisor', 'superadmin']), getListUsers)
   .post('/', authenticateJWT(['admin', 'supervisor', 'superadmin']), zValidator('json', postUserSchema), createUser)
   .put('/:id', authenticateJWT(['admin', 'supervisor', 'superadmin']), zValidator('json', updateUserSchema), updateUser)
+  .put('/customer/:id', authenticateJWT(['customer']), updateUserCustomer)

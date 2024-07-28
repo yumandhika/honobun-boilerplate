@@ -1,4 +1,4 @@
-import { and, count, eq, ilike, inArray, not, or, sql } from "drizzle-orm";
+import { and, count, eq, ilike, inArray, or } from "drizzle-orm";
 import { db } from "../db";
 import type { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
@@ -7,6 +7,8 @@ import { errorResponse, paginate, successMessageResponse, successResponse, takeU
 import { rolesTable } from "../db/schema/roles";
 import bcrypt from 'bcrypt';
 import { companyBranchTable } from "../db/schema/company-branch";
+import { customerAddressesTable } from "../db/schema/customer-addresses";
+import { customerCarsTable } from "../db/schema/customer-cars";
 
 export const getListUsers = async (c: Context): Promise<Response> => {
   try {
@@ -50,13 +52,26 @@ export const getListUsers = async (c: Context): Promise<Response> => {
     .where(and(...conditions)).then(takeUniqueOrThrow);
 
     const users = await paginate(usersQuery, limit, offset);
-    
-    console.log(users)
 
-    const formattedUsers = users.map((user: { users: any; roles: any; companyBranch: any; }) => ({
+    const userIds = users.map((user: any) => user.users.id);
+    
+    let addressesQuery = db.select()
+    .from(customerAddressesTable)
+    .where(inArray(customerAddressesTable.user_id, userIds));
+
+    let carsQuery = db.select()
+    .from(customerCarsTable)
+    .where(inArray(customerCarsTable.user_id, userIds));
+
+    const addresses = await addressesQuery;
+    const cars = await carsQuery;
+
+    const formattedUsers = users.map((user: { users: any; roles: any; companyBranch: any; cars: any; addresses: any }) => ({
       ...user.users,
       roles: user.roles,
-      companyBranch: user.companyBranch
+      companyBranch: user.companyBranch,
+      addresses: addresses.filter(address => address.user_id === user.users.id),
+      cars: cars.filter(car => car.user_id === user.users.id),
     }));
 
     c.status(200)

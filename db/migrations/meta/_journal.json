@@ -43,6 +43,13 @@
       "when": 1722171536799,
       "tag": "0005_clumsy_sinister_six",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1722223257315,
+      "tag": "0006_first_red_hulk",
+      "breakpoints": true
     }
   ]
 }

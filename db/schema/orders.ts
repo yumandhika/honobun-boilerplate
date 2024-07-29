@@ -22,10 +22,10 @@ export const ordersTable = pgTable(
     payment_proof_image: varchar('payment_proof_image', { length: 256 }),
     service_at: timestamp('service_at'),
     // relations Table
-    customer_id: uuid('customer_id').references(() => usersTable.id).notNull(), 
-    mechanic_id: uuid('mechanic_id').references(() => usersTable.id).notNull(), 
+    customer_id: uuid('customer_id').references(() => usersTable.id), 
+    mechanic_id: uuid('mechanic_id').references(() => usersTable.id), 
     company_branch_id: uuid('company_branch_id').references(() => companyBranchTable.id).notNull(), 
-    customer_car_id: uuid('customer_car_id').references(() => customerCarsTable.id).notNull(), 
+    customer_car_id: uuid('customer_car_id').references(() => customerCarsTable.id), 
     // default
     deletedAt: timestamp('deleted_at'), // Nullable timestamp for soft delete
     createdAt: timestamp('created_at').defaultNow(), // Default to the current timestamp

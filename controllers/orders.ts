@@ -172,7 +172,7 @@ export const getDetailOrderById = async (c: Context): Promise<Response> => {
       order: orderDetail,
       order_logs: orderlog,
       items: ordersItems,
-      carshop: carshop
+      company_branch: carshop
     }
 
     c.status(200);

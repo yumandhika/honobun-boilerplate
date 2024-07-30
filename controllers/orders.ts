@@ -7,6 +7,7 @@ import { ordersTable } from "../db/schema/orders";
 import { orderLogsTable } from "../db/schema/orderLogs";
 import { orderItemsTable } from "../db/schema/orderItems";
 import { orderStatus } from "../constants/orderStatus";
+import { companyBranchTable } from "../db/schema/company-branch";
 
 
 export const createOrders = async (c: Context): Promise<Response> => {
@@ -92,8 +93,9 @@ export const getListOrders = async (c: Context): Promise<Response> => {
     const orders = db
       .select()
       .from(ordersTable)
+      .leftJoin(companyBranchTable, eq(companyBranchTable.id, ordersTable.company_branch_id))
 
-    const totalAddress: any = await db.select({ count: count() }).from(ordersTable).then(takeUniqueOrThrow)
+    const totalAddress: any = await db.select({ count: count() }).from(ordersTable).leftJoin(companyBranchTable, eq(companyBranchTable.id, ordersTable.company_branch_id)).then(takeUniqueOrThrow)
     const carShops = await paginate(orders, limit, offset);
 
     c.status(200)
@@ -119,10 +121,12 @@ export const getListOrdersByCustomerId = async (c: Context): Promise<Response> =
     const orders = db
       .select()
       .from(ordersTable)
+      .leftJoin(companyBranchTable, eq(companyBranchTable.id, ordersTable.company_branch_id))
       .where(eq(ordersTable.customer_id, customerId));
 
     const totalAddress: any = await db.select({ count: count() })
     .from(ordersTable)
+    .leftJoin(companyBranchTable, eq(companyBranchTable.id, ordersTable.company_branch_id))
     .where(eq(ordersTable.customer_id, customerId)).then(takeUniqueOrThrow)
     const carShops = await paginate(orders, limit, offset);
 
@@ -156,13 +160,19 @@ export const getDetailOrderById = async (c: Context): Promise<Response> => {
     .from(orderItemsTable)
     .where(eq(orderItemsTable.order_id, orderId));
 
+    let carshop = db.select()
+    .from(companyBranchTable)
+    .where(eq(companyBranchTable.id, orderDetail.company_branch_id));
+
+
     const ordersItems = await orderItems;
     const orderlog = await orderLogs;
     
     const res = {
       order: orderDetail,
       order_logs: orderlog,
-      items: ordersItems
+      items: ordersItems,
+      carshop: carshop
     }
 
     c.status(200);

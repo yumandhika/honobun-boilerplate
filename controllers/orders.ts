@@ -158,8 +158,13 @@ export const getDetailOrderById = async (c: Context): Promise<Response> => {
 
     const ordersItems = await orderItems;
 
+    const total_price = ordersItems.reduce((total: any, item: any) => {
+      return total + (item.price * item.quantity);
+    }, 0);
+    
     const res = {
-      ...orderDetail,
+      order: {...orderDetail.orders, total_price },
+      order_logs: {...orderDetail.order_logs},
       items: ordersItems
     }
 

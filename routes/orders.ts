@@ -6,7 +6,7 @@ export const ordersRoute = new Hono()
   .post('/', createOrders)
   .get('/', getListOrders)
   .get('/customer/:customer_id', getListOrdersByCustomerId)
-  .get('/:id', getDetailOrderById)
+  .get('/detail/:id', getDetailOrderById)
   .put('/:id/status', updateOrderStatus)
   .put('/:id/schedule', updateOrderSchedule)
 

@@ -180,7 +180,7 @@ export const getDetailOrderById = async (c: Context): Promise<Response> => {
 
     let carshop = db.select()
     .from(companyBranchTable)
-    .where(eq(companyBranchTable.id, orderDetail.company_branch_id));
+    .where(eq(companyBranchTable.id, orderDetail.company_branch_id)).then(takeUniqueOrThrow);
 
 
     const ordersItems = await orderItems;

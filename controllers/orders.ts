@@ -379,6 +379,17 @@ export const updateOrderStatus = async (c: Context): Promise<Response> => {
       .where(eq(ordersTable.id, id))
       .execute();
 
+    const itemStat = orderStatus.find(x => x.value === status);
+
+    const lCO = {
+      order_id: id,
+      status: itemStat?.value,
+      title: itemStat?.label,
+      description: 'Status Di Ubah Admin'
+    };
+  
+    await db.insert(orderLogsTable).values(lCO);
+
     if (result.count === 0) {
       c.status(404);
       return errorResponse(c, 'Order not found');
@@ -390,6 +401,49 @@ export const updateOrderStatus = async (c: Context): Promise<Response> => {
     console.log(err);
     throw new HTTPException(400, {
       message: 'Error updating order status',
+      cause: err
+    });
+  }
+};
+
+export const updateOrderSchedule = async (c: Context): Promise<Response> => {
+  try {
+    const id = c.req.param('id');
+    const { service_at } = await c.req.json();
+    
+    const data = {
+      service_at: service_at ? typeof service_at === 'string' ? new Date(service_at) : service_at : null,
+      status: 'pending',
+      updatedAt: new Date()
+    }
+
+    // Update status order berdasarkan ID
+    const result = await db
+      .update(ordersTable)
+      .set(data)
+      .where(eq(ordersTable.id, id))
+      .execute();
+
+    const lCO = {
+      order_id: id,
+      status: 'pending',
+      title: 'menunggu antrian',
+      description: 'User Reschedule Order.'
+    };
+  
+    await db.insert(orderLogsTable).values(lCO);
+
+    if (result.count === 0) {
+      c.status(404);
+      return errorResponse(c, 'Order not found');
+    }
+
+    c.status(200);
+    return successResponse(c, 'Order service at updated successfully');
+  } catch (err) {
+    console.log(err);
+    throw new HTTPException(400, {
+      message: 'Error updating order service at',
       cause: err
     });
   }

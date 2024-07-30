@@ -331,9 +331,10 @@ export const updateOrderItem = async (c: Context): Promise<Response> => {
     }
 
     // update price
+    const itemDetails = await db.select().from(orderItemsTable).where(eq(orderItemsTable.id, id)).then(takeUniqueOrThrow);
     let orderItems = db.select()
     .from(orderItemsTable)
-    .where(eq(orderItemsTable.order_id, id));
+    .where(eq(orderItemsTable.order_id, itemDetails.order_id));
     const ordersItems = await orderItems;
     const total_price = ordersItems.reduce((total: any, item: any) => {
       return total + (item.price * item.quantity);
@@ -341,7 +342,7 @@ export const updateOrderItem = async (c: Context): Promise<Response> => {
     await db
       .update(ordersTable)
       .set({ total_price, updatedAt: new Date() })
-      .where(eq(ordersTable.id, id))
+      .where(eq(ordersTable.id, itemDetails.order_id))
       .execute();
     // end update price
 
@@ -360,7 +361,8 @@ export const deleteOrderItem = async (c: Context): Promise<Response> => {
   try {
     const id = c.req.param('id');
 
-    const result = await db.update(orderItemsTable).set({ deletedAt: new Date() }).where(eq(orderItemsTable.id, id)).execute();
+    const itemDetails = await db.select().from(orderItemsTable).where(eq(orderItemsTable.id, id)).then(takeUniqueOrThrow);
+    const result = await db.delete(orderItemsTable).where(eq(orderItemsTable.id, id));
 
     if (result.count === 0) {
       c.status(404);
@@ -370,7 +372,7 @@ export const deleteOrderItem = async (c: Context): Promise<Response> => {
     // update price
     let orderItems = db.select()
     .from(orderItemsTable)
-    .where(eq(orderItemsTable.order_id, id));
+    .where(eq(orderItemsTable.order_id, itemDetails.order_id));
     const ordersItems = await orderItems;
     const total_price = ordersItems.reduce((total: any, item: any) => {
       return total + (item.price * item.quantity);
@@ -378,7 +380,7 @@ export const deleteOrderItem = async (c: Context): Promise<Response> => {
     await db
       .update(ordersTable)
       .set({ total_price, updatedAt: new Date() })
-      .where(eq(ordersTable.id, id))
+      .where(eq(ordersTable.id, itemDetails.order_id))
       .execute();
     // end update price
     

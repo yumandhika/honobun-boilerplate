@@ -50,6 +50,13 @@
       "when": 1722223257315,
       "tag": "0006_first_red_hulk",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1722327066916,
+      "tag": "0007_bizarre_zodiak",
+      "breakpoints": true
     }
   ]
 }

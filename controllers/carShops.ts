@@ -115,3 +115,25 @@ export const deleteCarShops = async (c: Context): Promise<Response> => {
     });
   }
 };
+
+export const getDetailCarshop = async (c: Context): Promise<Response> => {
+  try {
+    const carshopId = c.req.param("id");
+    
+    const carshop = await db
+      .select()
+      .from(companyBranchTable)
+      .where(eq(companyBranchTable.id, carshopId))
+      .then(takeUniqueOrThrow);
+
+    c.status(200);
+    return successResponse(c, carshop);
+
+  } catch (err) {
+    console.log(err);
+    throw new HTTPException(400, { 
+      message: 'Error fetching carshop details',
+      cause: err
+    });
+  }
+};

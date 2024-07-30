@@ -15,6 +15,7 @@ export const ordersTable = pgTable(
     mechanic_name: varchar('mechanic_name', { length: 256 }),
     customer_address: varchar('customer_address', { length: 256 }),
     service_type: varchar('service_type', { length: 256 }), // enum mechanic-pickup and self-deliver
+    status: varchar('status', { length: 256 }), // enum status
     description: varchar('description', { length: 256 }),
     distance: numeric('distance'), // Changed to numeric
     total_price: numeric('total_price'), // Changed to numeric

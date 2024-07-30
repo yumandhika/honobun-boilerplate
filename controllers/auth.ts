@@ -43,7 +43,7 @@ export const login = async (c: Context): Promise<Response> => {
       userId: user.id,
       role: roleResult.name,
       ...user,
-      exp: 7 * 24 * 60 * 60, // Token expires in 5 minutes
+      exp: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60, // Token expires in 5 minutes
     }
 
     // Get token

@@ -151,8 +151,20 @@ export const getDetailOrderById = async (c: Context): Promise<Response> => {
       .leftJoin(orderLogsTable, eq(ordersTable.id, orderLogsTable.order_id))
       .where(eq(ordersTable.id, orderId)).then(takeUniqueOrThrow);
 
+    
+    let orderItems = db.select()
+    .from(orderItemsTable)
+    .where(eq(orderItemsTable.order_id, orderId));
+
+    const ordersItems = await orderItems;
+
+    const res = {
+      ...orderDetail,
+      items: ordersItems
+    }
+
     c.status(200);
-    return successResponse(c, orderDetail);
+    return successResponse(c, res);
   } catch (err) {
     console.log(err);
     throw new HTTPException(400, {

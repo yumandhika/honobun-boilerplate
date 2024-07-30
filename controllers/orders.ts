@@ -262,6 +262,23 @@ export const createOrderItem = async (c: Context): Promise<Response> => {
 
     await db.insert(orderItemsTable).values(newItem);
 
+
+    // update price
+    let orderItems = db.select()
+    .from(orderItemsTable)
+    .where(eq(orderItemsTable.order_id, order_id));
+    const ordersItems = await orderItems;
+    const total_price = ordersItems.reduce((total: any, item: any) => {
+      return total + (item.price * item.quantity);
+    }, 0);
+    await db
+      .update(ordersTable)
+      .set({ total_price, updatedAt: new Date() })
+      .where(eq(ordersTable.id, order_id))
+      .execute();
+    // end update price
+
+
     c.status(201);
     return successResponse(c, 'Order item created successfully');
   } catch (err) {
@@ -313,6 +330,21 @@ export const updateOrderItem = async (c: Context): Promise<Response> => {
       return errorResponse(c, 'Order item not found');
     }
 
+    // update price
+    let orderItems = db.select()
+    .from(orderItemsTable)
+    .where(eq(orderItemsTable.order_id, id));
+    const ordersItems = await orderItems;
+    const total_price = ordersItems.reduce((total: any, item: any) => {
+      return total + (item.price * item.quantity);
+    }, 0);
+    await db
+      .update(ordersTable)
+      .set({ total_price, updatedAt: new Date() })
+      .where(eq(ordersTable.id, id))
+      .execute();
+    // end update price
+
     c.status(200);
     return successResponse(c, 'Order item updated successfully');
   } catch (err) {
@@ -335,6 +367,21 @@ export const deleteOrderItem = async (c: Context): Promise<Response> => {
       return errorResponse(c, 'Order item not found');
     }
 
+    // update price
+    let orderItems = db.select()
+    .from(orderItemsTable)
+    .where(eq(orderItemsTable.order_id, id));
+    const ordersItems = await orderItems;
+    const total_price = ordersItems.reduce((total: any, item: any) => {
+      return total + (item.price * item.quantity);
+    }, 0);
+    await db
+      .update(ordersTable)
+      .set({ total_price, updatedAt: new Date() })
+      .where(eq(ordersTable.id, id))
+      .execute();
+    // end update price
+    
     c.status(200);
     return successResponse(c, 'Order item deleted successfully');
   } catch (err) {

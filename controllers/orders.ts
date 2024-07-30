@@ -119,20 +119,27 @@ export const getListOrdersByCustomerId = async (c: Context): Promise<Response> =
   try {
     const customerId = c.req.param("customer_id");
 
+    const conditions = [];
+    const status = c.req.query('status');
     const limit = parseInt(c.req.query("limit") || "10");
     const offset = parseInt(c.req.query("offset") || "0");
     const currentPage = Math.floor(offset / limit) + 1;
+
+    if (status) {
+      conditions.push(eq(ordersTable.status, status));
+    }
+    conditions.push(eq(ordersTable.customer_id, customerId))
 
     const orders = db
       .select()
       .from(ordersTable)
       .leftJoin(companyBranchTable, eq(companyBranchTable.id, ordersTable.company_branch_id))
-      .where(eq(ordersTable.customer_id, customerId));
+      .where(and(...conditions));
 
     const totalAddress: any = await db.select({ count: count() })
     .from(ordersTable)
     .leftJoin(companyBranchTable, eq(companyBranchTable.id, ordersTable.company_branch_id))
-    .where(eq(ordersTable.customer_id, customerId)).then(takeUniqueOrThrow)
+    .where(and(...conditions)).then(takeUniqueOrThrow)
     const carShops = await paginate(orders, limit, offset);
 
 

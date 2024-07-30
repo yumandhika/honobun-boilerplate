@@ -7,6 +7,7 @@ import { carsRoute} from './cars'
 import { carShopsRoute } from './carshops'
 import { ordersRoute } from './orders'
 import { utilsRoute } from './utils'
+import { dashboardRoute } from './home'
 
 export const Routes = new Hono()
   .route('auth', authRoute)
@@ -17,3 +18,4 @@ export const Routes = new Hono()
   .route('carshops', carShopsRoute)
   .route('orders', ordersRoute)
   .route('utils', utilsRoute)
+  .route('dashboard', dashboardRoute)

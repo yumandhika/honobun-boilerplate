@@ -92,9 +92,8 @@ export const getListOrders = async (c: Context): Promise<Response> => {
     const orders = db
       .select()
       .from(ordersTable)
-      .leftJoin(orderLogsTable, eq(ordersTable.id, orderLogsTable.order_id));
 
-    const totalAddress: any = await db.select({ count: count() }).from(ordersTable).leftJoin(orderLogsTable, eq(ordersTable.id, orderLogsTable.order_id)).then(takeUniqueOrThrow)
+    const totalAddress: any = await db.select({ count: count() }).from(ordersTable).then(takeUniqueOrThrow)
     const carShops = await paginate(orders, limit, offset);
 
     c.status(200)
@@ -120,12 +119,10 @@ export const getListOrdersByCustomerId = async (c: Context): Promise<Response> =
     const orders = db
       .select()
       .from(ordersTable)
-      .leftJoin(orderLogsTable, eq(ordersTable.id, orderLogsTable.order_id))
       .where(eq(ordersTable.customer_id, customerId));
 
     const totalAddress: any = await db.select({ count: count() })
     .from(ordersTable)
-    .leftJoin(orderLogsTable, eq(ordersTable.id, orderLogsTable.order_id))
     .where(eq(ordersTable.customer_id, customerId)).then(takeUniqueOrThrow)
     const carShops = await paginate(orders, limit, offset);
 
@@ -148,23 +145,23 @@ export const getDetailOrderById = async (c: Context): Promise<Response> => {
     const orderDetail = await db
       .select()
       .from(ordersTable)
-      .leftJoin(orderLogsTable, eq(ordersTable.id, orderLogsTable.order_id))
       .where(eq(ordersTable.id, orderId)).then(takeUniqueOrThrow);
 
     
+    let orderLogs = db.select()
+    .from(orderLogsTable)
+    .where(eq(orderLogsTable.order_id, orderId));
+
     let orderItems = db.select()
     .from(orderItemsTable)
     .where(eq(orderItemsTable.order_id, orderId));
 
     const ordersItems = await orderItems;
-
-    const total_price = ordersItems.reduce((total: any, item: any) => {
-      return total + (item.price * item.quantity);
-    }, 0);
+    const orderlog = await orderLogs;
     
     const res = {
-      order: {...orderDetail.orders, total_price },
-      order_logs: {...orderDetail.order_logs},
+      order: orderDetail,
+      order_logs: orderlog,
       items: ordersItems
     }
 

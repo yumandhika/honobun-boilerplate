@@ -98,8 +98,13 @@ export const getListOrders = async (c: Context): Promise<Response> => {
     const totalAddress: any = await db.select({ count: count() }).from(ordersTable).leftJoin(companyBranchTable, eq(companyBranchTable.id, ordersTable.company_branch_id)).then(takeUniqueOrThrow)
     const carShops = await paginate(orders, limit, offset);
 
+    const formattedShops = carShops.map((carShop: any) => ({
+      ...carShop.orders,
+      company_branch: {...carShop.company_branch}
+    }));
+
     c.status(200)
-    return successResponse(c, carShops, {currentPage, total: totalAddress?.count ?? 0, limit, offset})
+    return successResponse(c, formattedShops, {currentPage, total: totalAddress?.count ?? 0, limit, offset})
 
   } catch (err) {
     console.log(err);
@@ -130,8 +135,14 @@ export const getListOrdersByCustomerId = async (c: Context): Promise<Response> =
     .where(eq(ordersTable.customer_id, customerId)).then(takeUniqueOrThrow)
     const carShops = await paginate(orders, limit, offset);
 
+
+    const formattedShops = carShops.map((carShop: any) => ({
+      ...carShop.orders,
+      company_branch: {...carShop.company_branch}
+    }));
+
     c.status(200)
-    return successResponse(c, carShops, {currentPage, total: totalAddress?.count ?? 0, limit, offset})
+    return successResponse(c, formattedShops, {currentPage, total: totalAddress?.count ?? 0, limit, offset})
 
   } catch (err) {
     console.log(err);
@@ -167,16 +178,17 @@ export const getDetailOrderById = async (c: Context): Promise<Response> => {
 
     const ordersItems = await orderItems;
     const orderlog = await orderLogs;
+    const shops = await carshop;
     
     const res = {
-      order: orderDetail,
+      ...orderDetail,
       order_logs: orderlog,
       items: ordersItems,
-      company_branch: carshop
+      company_branch: shops
     }
 
     c.status(200);
-    return successResponse(c, res);
+    return successResponse(c, {...res});
   } catch (err) {
     console.log(err);
     throw new HTTPException(400, {

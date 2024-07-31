@@ -1,5 +1,5 @@
 import { Hono } from 'hono'
-import { checkAvailability, createOrderItem, createOrders, deleteOrderItem, getDetailOrderById, getListOrderItem, getListOrders, getListOrdersByCustomerId, getOrderItemById, updateOrderItem, updateOrderMechanic, updateOrderSchedule, updateOrderStatus } from '../controllers/orders';
+import { checkAvailability, createOrderItem, createOrders, deleteOrderItem, getDetailOrderById, getListOrderItem, getListOrders, getListOrdersByCustomerId, getOrderItemById, updateOrderItem, updateOrderMechanic, updateOrderPaymentType, updateOrderReschedule, updateOrderSchedule, updateOrderStatus } from '../controllers/orders';
 
 export const ordersRoute = new Hono()
   // orders
@@ -10,6 +10,10 @@ export const ordersRoute = new Hono()
   .put('/:id/status', updateOrderStatus)
   .put('/:id/schedule', updateOrderSchedule)
   .put('/:id/mechanic', updateOrderMechanic)
+
+
+  .put('/:id/customer/choose-payment', updateOrderPaymentType)
+  .put('/:id/customer/reschedule', updateOrderReschedule)
 
   // order utils
   .get('/check-availability', checkAvailability)

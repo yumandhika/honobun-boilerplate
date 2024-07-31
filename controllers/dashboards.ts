@@ -1,4 +1,4 @@
-import { and, count, desc, eq } from "drizzle-orm";
+import { and, count, desc, eq, not } from "drizzle-orm";
 import { ordersTable } from "../db/schema/orders";
 import { db } from "../db";
 import { errorResponse, paginate, successResponse, takeUniqueOrThrow } from "../utils/helpers";
@@ -23,8 +23,8 @@ export const getDashboard = async (c: Context): Promise<Response> => {
         c.status(400)
         return errorResponse(c, 'dibutuhkan parameter customer id')
       }
-      const onProgressService = await getOrderByStatusAndCustomerId('inprogress',customerId)
-      const completeService = await getOrderByStatusAndCustomerId('complete',customerId, 3)
+      const onProgressService = await getOrderByStatusAndCustomerId('complete',customerId,null, true)
+      const completeService = await getOrderByStatusAndCustomerId('complete',customerId, 3, false)
       const carshop = await getCarshop(3)
       response.on_progress_services = onProgressService;
       response.last_services = completeService;
@@ -46,11 +46,15 @@ export const getDashboard = async (c: Context): Promise<Response> => {
   }
 };
 
-const getOrderByStatusAndCustomerId = async (status:any = 'inprogress', customerId: any, limit: any = null) => {
+const getOrderByStatusAndCustomerId = async (status:any = 'inprogress', customerId: any, limit: any = null, exceptStatus = false) => {
   try {
     const conditions = []
 
-    conditions.push(eq(ordersTable.status, status));
+    if (exceptStatus) {
+      conditions.push(not(eq(ordersTable.status, status)));
+    } else {
+      conditions.push(eq(ordersTable.status, status));
+    }
     conditions.push(eq(ordersTable.customer_id, customerId))
 
     const orders = db

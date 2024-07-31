@@ -71,8 +71,8 @@ export const createOrders = async (c: Context): Promise<Response> => {
 
     await db.insert(orderLogsTable).values(lCO);
 
-    c.status(201)
-    return successMessageResponse(c, 'success create order')
+    c.status(200)
+    return successResponse(c, {order_id: orderId})
 
   } catch (err) {
     console.log(err)
@@ -98,10 +98,14 @@ export const getListOrders = async (c: Context): Promise<Response> => {
     const totalAddress: any = await db.select({ count: count() }).from(ordersTable).leftJoin(companyBranchTable, eq(companyBranchTable.id, ordersTable.company_branch_id)).then(takeUniqueOrThrow)
     const carShops = await paginate(orders, limit, offset);
 
-    const formattedShops = carShops.map((carShop: any) => ({
-      ...carShop.orders,
-      company_branch: {...carShop.company_branch}
-    }));
+    const formattedShops = carShops.map((carShop: any) => {
+      const status = orderStatus.find((data, index) => data.value == carShop.orders.status)
+      return {
+        ...carShop.orders,
+        status_label: status ? status.label : null,
+        company_branch: {...carShop.company_branch}
+      }
+    });
 
     c.status(200)
     return successResponse(c, formattedShops, {currentPage, total: totalAddress?.count ?? 0, limit, offset})
@@ -143,10 +147,14 @@ export const getListOrdersByCustomerId = async (c: Context): Promise<Response> =
     const carShops = await paginate(orders, limit, offset);
 
 
-    const formattedShops = carShops.map((carShop: any) => ({
-      ...carShop.orders,
-      company_branch: {...carShop.company_branch}
-    }));
+    const formattedShops = carShops.map((carShop: any) => {
+      const status = orderStatus.find((data, index) => data.value == carShop.orders.status)
+      return {
+        ...carShop.orders,
+        status_label: status ? status.label : null,
+        company_branch: {...carShop.company_branch}
+      }
+    });
 
     c.status(200)
     return successResponse(c, formattedShops, {currentPage, total: totalAddress?.count ?? 0, limit, offset})
@@ -190,10 +198,13 @@ export const getDetailOrderById = async (c: Context): Promise<Response> => {
     
     const validStatuses = new Set(['delivery', 'complete', 'waiting-payment-confirmation']);
 
+    const status = orderStatus.find((data) => data.value === orderDetail.status);
+
     const res = {
       ...orderDetail,
-      isAbleToPay: validStatuses.has(orderDetail.status) ?  true : false,
-      isAbleToReschdule: orderDetail.status == 'pending' ? true : false,
+      is_able_to_pay: validStatuses.has(orderDetail.status) ?  true : false,
+      is_able_to_reschdule: orderDetail.status == 'pending' ? true : false,
+      status_label: status ? status.label : null,
       order_logs: orderlog,
       items: ordersItems,
       company_branch: shops
@@ -573,6 +584,100 @@ export const updateOrderMechanic = async (c: Context): Promise<Response> => {
       status: 'pending',
       title: 'menunggu antrian',
       description: 'Mechanic Telah Di inputkan.'
+    };
+  
+    await db.insert(orderLogsTable).values(lCO);
+
+    if (result.count === 0) {
+      c.status(404);
+      return errorResponse(c, 'Order not found');
+    }
+
+    c.status(200);
+    return successResponse(c, 'Order service at updated successfully');
+  } catch (err) {
+    console.log(err);
+    throw new HTTPException(400, {
+      message: 'Error updating order service at',
+      cause: err
+    });
+  }
+};
+
+export const updateOrderPaymentType = async (c: Context): Promise<Response> => {
+  try {
+    const id = c.req.param('id');
+    const { 
+      payment_type,
+      payment_proof_image
+     } = await c.req.json();
+    
+    const data = {
+      payment_type,
+      payment_proof_image,
+      status: 'waiting-payment-confirmation',
+      updatedAt: new Date()
+    }
+
+    // Update status order berdasarkan ID
+    const result = await db
+      .update(ordersTable)
+      .set(data)
+      .where(eq(ordersTable.id, id))
+      .execute();
+
+    const lCO = {
+      order_id: id,
+      status: 'waiting-payment-confirmation',
+      title: 'Menunggu Konfirmasi Pembayaran',
+      description: 'Pembayaran telah di ajukan, Menunggu Admin konfirmasi pembayaran.'
+    };
+  
+    await db.insert(orderLogsTable).values(lCO);
+
+    if (result.count === 0) {
+      c.status(404);
+      return errorResponse(c, 'Order not found');
+    }
+
+    c.status(200);
+    return successResponse(c, 'Order service at updated successfully');
+  } catch (err) {
+    console.log(err);
+    throw new HTTPException(400, {
+      message: 'Error updating order service at',
+      cause: err
+    });
+  }
+};
+
+export const updateOrderReschedule = async (c: Context): Promise<Response> => {
+  try {
+    const id = c.req.param('id');
+    const { 
+      company_branch_id,
+      service_at
+     } = await c.req.json();
+    
+    const data = {
+      company_branch_id,
+      service_at,
+      status: 'reschedule',
+      updatedAt: new Date()
+    }
+
+    // Update status order berdasarkan ID
+    const result = await db
+      .update(ordersTable)
+      .set(data)
+      .where(eq(ordersTable.id, id))
+      .execute();
+
+    const lCO = {
+      order_id: id,
+      status: 'reschedule',
+      title: 'Jadwal Diubah, Menunggu Antrian (Reschedule)',
+      description: 'Pengajuan reschedule telah di kirim'
     };
   
     await db.insert(orderLogsTable).values(lCO);

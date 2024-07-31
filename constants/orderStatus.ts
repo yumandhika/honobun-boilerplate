@@ -1,34 +1,42 @@
 export const orderStatus = [
   {
-    label: 'menunggu antrian',
+    label: 'Menunggu Antrian',
     value: 'pending'
   },
   {
-    label: 'mobil sedang di jemput',
+    label: 'Mobil Dalam Perjalanan',
     value: 'pickup'
   },
   {
-    label: 'pengecekan',
+    label: 'Pengecekan',
     value: 'checking'
   },
   {
-    label: 'konfimasi pengecekan',
+    label: 'Konfirmasi Pengecekan',
     value: 'checking-confirmation'
   },
   {
-    label: 'sedang di kerjakan',
+    label: 'Sedang Dikerjakan',
     value: 'inprogress'
   },
   {
-    label: 'mobil siap di antar',
-    value: 'delivery'
+    label: 'Menunggu Pembayaran',
+    value: 'waiting-payment'
   },
   {
-    label: 'mengunggu pembayaran',
+    label: 'Menunggu Konfirmasi Pembayaran',
     value: 'waiting-payment-confirmation'
+  },
+  {
+    label: 'Mobil Sudah Siap',
+    value: 'delivery'
   },
   {
     label: 'selesai',
     value: 'complete'
+  },
+  {
+    label: 'Jadwal Diubah, Menunggu Antrian (Reschedule)',
+    value: 'reschedule'
   },
 ]

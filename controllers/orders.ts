@@ -661,7 +661,7 @@ export const updateOrderReschedule = async (c: Context): Promise<Response> => {
     
     const data = {
       company_branch_id,
-      service_at,
+      service_at: service_at ? typeof service_at === 'string' ? new Date(service_at) : service_at : null,
       status: 'reschedule',
       updatedAt: new Date()
     }

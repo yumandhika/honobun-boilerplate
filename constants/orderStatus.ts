@@ -8,12 +8,12 @@ export const orderStatus = [
     value: 'pickup'
   },
   {
-    label: 'pengechekan',
-    value: 'cheking'
+    label: 'pengecekan',
+    value: 'checking'
   },
   {
-    label: 'konfimasi pengechekan',
-    value: 'cheking-confirmation'
+    label: 'konfimasi pengecekan',
+    value: 'checking-confirmation'
   },
   {
     label: 'sedang di kerjakan',
@@ -25,7 +25,7 @@ export const orderStatus = [
   },
   {
     label: 'mengunggu pembayaran',
-    value: 'waiting-payment'
+    value: 'waiting-payment-confirmation'
   },
   {
     label: 'selesai',

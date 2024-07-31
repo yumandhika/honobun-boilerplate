@@ -2,7 +2,7 @@ import type { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { errorResponse, paginate, successMessageResponse, successResponse, takeUniqueOrThrow } from "../utils/helpers";
 import { db } from "../db";
-import { and, count, eq, gte, inArray, lt } from "drizzle-orm";
+import { and, count, desc, eq, gte, inArray, lt } from "drizzle-orm";
 import { ordersTable } from "../db/schema/orders";
 import { orderLogsTable } from "../db/schema/orderLogs";
 import { orderItemsTable } from "../db/schema/orderItems";
@@ -172,7 +172,8 @@ export const getDetailOrderById = async (c: Context): Promise<Response> => {
     
     let orderLogs = db.select()
     .from(orderLogsTable)
-    .where(eq(orderLogsTable.order_id, orderId));
+    .where(eq(orderLogsTable.order_id, orderId))
+    .orderBy(desc(orderLogsTable.createdAt));
 
     let orderItems = db.select()
     .from(orderItemsTable)

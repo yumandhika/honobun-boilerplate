@@ -164,7 +164,7 @@ export const getDetailOrderById = async (c: Context): Promise<Response> => {
   try {
     const orderId = c.req.param("id");
 
-    const orderDetail = await db
+    const orderDetail: any = await db
       .select()
       .from(ordersTable)
       .where(eq(ordersTable.id, orderId)).then(takeUniqueOrThrow);
@@ -188,8 +188,12 @@ export const getDetailOrderById = async (c: Context): Promise<Response> => {
     const orderlog = await orderLogs;
     const shops = await carshop;
     
+    const validStatuses = new Set(['delivery', 'complete', 'waiting-payment-confirmation']);
+
     const res = {
       ...orderDetail,
+      isAbleToPay: validStatuses.has(orderDetail.status) ?  true : false,
+      isAbleToReschdule: orderDetail.status == 'pending' ? true : false,
       order_logs: orderlog,
       items: ordersItems,
       company_branch: shops
@@ -522,6 +526,53 @@ export const updateOrderSchedule = async (c: Context): Promise<Response> => {
       status: 'pending',
       title: 'menunggu antrian',
       description: 'User Reschedule Order.'
+    };
+  
+    await db.insert(orderLogsTable).values(lCO);
+
+    if (result.count === 0) {
+      c.status(404);
+      return errorResponse(c, 'Order not found');
+    }
+
+    c.status(200);
+    return successResponse(c, 'Order service at updated successfully');
+  } catch (err) {
+    console.log(err);
+    throw new HTTPException(400, {
+      message: 'Error updating order service at',
+      cause: err
+    });
+  }
+};
+
+export const updateOrderMechanic = async (c: Context): Promise<Response> => {
+  try {
+    const id = c.req.param('id');
+    const { 
+      mechanic_name,
+      mechanic_id
+     } = await c.req.json();
+    
+    const data = {
+      mechanic_name,
+      mechanic_id,
+      status: 'pending',
+      updatedAt: new Date()
+    }
+
+    // Update status order berdasarkan ID
+    const result = await db
+      .update(ordersTable)
+      .set(data)
+      .where(eq(ordersTable.id, id))
+      .execute();
+
+    const lCO = {
+      order_id: id,
+      status: 'pending',
+      title: 'menunggu antrian',
+      description: 'Mechanic Telah Di inputkan.'
     };
   
     await db.insert(orderLogsTable).values(lCO);

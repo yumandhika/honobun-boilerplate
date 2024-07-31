@@ -1,11 +1,11 @@
-import { pgTable, uuid, varchar, timestamp, time } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, timestamp, time, text } from 'drizzle-orm/pg-core';
 
 export const companyBranchTable = pgTable(
   'company_branch', 
   {
     id: uuid('id').primaryKey().defaultRandom(),
     name: varchar('name', { length: 256 }),
-    description: varchar('description', { length: 256 }),
+    description: text('description'),
     phone: varchar('phone', { length: 256 }),
     address: varchar('address', { length: 256 }),
     lat: varchar('lat', { length: 256 }),

@@ -57,6 +57,13 @@
       "when": 1722327066916,
       "tag": "0007_bizarre_zodiak",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1722449552027,
+      "tag": "0008_perfect_madripoor",
+      "breakpoints": true
     }
   ]
 }

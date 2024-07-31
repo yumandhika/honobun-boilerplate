@@ -1,0 +1,1 @@
+ALTER TABLE "company_branch" ALTER COLUMN "description" SET DATA TYPE text;

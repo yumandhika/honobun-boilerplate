@@ -64,6 +64,13 @@
       "when": 1722449552027,
       "tag": "0008_perfect_madripoor",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1722450776305,
+      "tag": "0009_plain_ricochet",
+      "breakpoints": true
     }
   ]
 }

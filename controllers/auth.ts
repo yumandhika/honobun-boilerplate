@@ -3,11 +3,12 @@ import { db } from "../db";
 import { usersTable } from "../db/schema/users";
 import bcrypt from 'bcrypt';
 import { sign } from 'hono/jwt'
-import { errorResponse, successMessageResponse, successResponse, takeUniqueOrThrow } from "../utils/helpers";
+import { convertToInternationalFormat, errorResponse, generateOTP, successMessageResponse, successResponse, takeUniqueOrThrow } from "../utils/helpers";
 import { envConfig } from "../config/config";
 import type { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { rolesTable } from "../db/schema/roles";
+import { sendOtpToWhatsApp } from "../services/twillio.service";
 
 export const login = async (c: Context): Promise<Response> => {
   try {
@@ -26,6 +27,11 @@ export const login = async (c: Context): Promise<Response> => {
     if (!user) {
       c.status(400)
       return errorResponse(c, 'user not found')
+    }
+
+    if (user.status !== 'active') { // Check if user status is active
+      c.status(400);
+      return errorResponse(c, 'User status is not active');
     }
 
     // Password Verification
@@ -61,7 +67,7 @@ export const login = async (c: Context): Promise<Response> => {
 
 export const register = async (c: Context): Promise<Response> => {
   try {
-    const { name, email, phone, password, image, status, fcm_token } = await c.req.json();
+    const { name, email, phone, password, image, fcm_token } = await c.req.json();
     
     const conditions = [];
 
@@ -73,7 +79,7 @@ export const register = async (c: Context): Promise<Response> => {
       conditions.push(eq(usersTable.phone, phone));
     }
     // Check if user already exists
-    const existingUser = await db
+    const existingUser: any = await db
       .select()
       .from(usersTable)
       .where(or(...conditions))
@@ -106,7 +112,7 @@ export const register = async (c: Context): Promise<Response> => {
       password: hashedPassword,
       role_id : roleResult,
       image,
-      status,
+      status: 'inactive',
       fcm_token,
       createdAt: new Date(),
       updatedAt: new Date()
@@ -125,3 +131,140 @@ export const register = async (c: Context): Promise<Response> => {
     });
   }
 }
+
+
+export const requestOTP = async (c: Context): Promise<Response> => {
+  try {
+    const { emailOrPhone } = await c.req.json();
+
+    // Find user by email or phone
+    const user: any = await db
+      .select()
+      .from(usersTable)
+      .where(or(
+        eq(usersTable.email, emailOrPhone),
+        eq(usersTable.phone, emailOrPhone)
+      ))
+      .then(takeUniqueOrThrow);
+
+    if (!user) {
+      c.status(400);
+      return errorResponse(c, 'User not found');
+    }
+
+    // Generate OTP
+    const otp = generateOTP();
+    const otpExpiration = new Date(Date.now() + 24 * 60 * 60 * 1000); // OTP valid for 10 minutes
+
+    // Update user with OTP and expiration
+    await db.update(usersTable)
+      .set({ otp, otp_expiration: otpExpiration })
+      .where(eq(usersTable.id, user.id));
+
+    // TODO: Send OTP via email or SMS
+    console.log(`OTP for ${emailOrPhone}: ${otp}`);
+    // Send OTP via WhatsApp
+    await sendOtpToWhatsApp(convertToInternationalFormat(user.phone), otp.toString());
+
+    return successMessageResponse(c, 'OTP sent');
+
+  } catch (err) {
+    throw new HTTPException(400, {
+      message: 'Error requesting OTP',
+      cause: err
+    });
+  }
+};
+
+export const resetPassword = async (c: Context): Promise<Response> => {
+  try {
+    const { emailOrPhone, otp, newPassword } = await c.req.json();
+
+    // Find user by email or phone
+    const user: any = await db
+      .select()
+      .from(usersTable)
+      .where(or(
+        eq(usersTable.email, emailOrPhone),
+        eq(usersTable.phone, emailOrPhone)
+      ))
+      .then(takeUniqueOrThrow);
+
+    if (!user) {
+      c.status(400);
+      return errorResponse(c, 'User not found');
+    }
+
+    // Check OTP
+    if (user.otp !== otp || new Date() > new Date(user.otp_expiration)) {
+      c.status(400);
+      return errorResponse(c, 'Invalid or expired OTP');
+    }
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update user password
+    await db.update(usersTable)
+      .set({ password: hashedPassword, otp: null, otp_expiration: null })
+      .where(eq(usersTable.id, user.id));
+
+    return successMessageResponse(c, 'Password reset successfully');
+
+  } catch (err) {
+    throw new HTTPException(400, {
+      message: 'Error resetting password',
+      cause: err
+    });
+  }
+};
+
+export const verifyOTP = async (c: Context): Promise<Response> => {
+  try {
+    const { emailOrPhone, otp } = await c.req.json();
+
+    const user: any = await db
+      .select()
+      .from(usersTable)
+      .where(or(
+        eq(usersTable.email, emailOrPhone),
+        eq(usersTable.phone, emailOrPhone)
+      ))
+      .then(takeUniqueOrThrow);
+
+    if (!user) {
+      c.status(400);
+      return errorResponse(c, 'User not found');
+    }
+    
+    // Ensure otp is compared as a string
+    const otpStored = user.otp as string;
+    const otpProvided = otp as string;
+
+    // Ensure expiration time is compared correctly
+    const otpExpiration = new Date(user.otp_expiration as string);
+    const now = new Date();
+
+    if (otpStored != otpProvided || now > otpExpiration) {
+      c.status(400);
+      return errorResponse(c, 'Invalid or expired OTP');
+    }
+
+    // Mark user as active and clear OTP details
+    await db.update(usersTable)
+      .set({
+        otp: null,
+        otp_expiration: null,
+        status: 'active'
+      })
+      .where(eq(usersTable.id, user.id));
+
+    return successMessageResponse(c, 'User activated successfully');
+
+  } catch (err) {
+    throw new HTTPException(400, {
+      message: 'Error verifying OTP',
+      cause: err
+    });
+  }
+};

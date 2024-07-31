@@ -40,3 +40,11 @@ export function formatZodError(error: z.ZodError) {
 export const paginate = (query: any, limit: number, offset: number) => {
   return query.limit(limit).offset(offset);
 };
+
+export const generateOTP = () => Math.floor(100000 + Math.random() * 900000); 
+
+export const convertToInternationalFormat = (localNumber: string) => {
+  const numberWithoutLeadingZero = localNumber.replace(/^0/, '');
+  const internationalNumber = `+62${numberWithoutLeadingZero}`;
+  return internationalNumber;
+}

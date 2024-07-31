@@ -1,4 +1,4 @@
-import { pgTable, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
+import { integer, pgTable, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
 import { rolesTable } from './roles';
 
 export const usersTable = pgTable(
@@ -12,6 +12,9 @@ export const usersTable = pgTable(
     password: varchar('password', { length: 100 }).notNull(),
     status: varchar('status', { length: 50 }).default('active'),
     fcm_token: varchar('fcm_token', { length: 256 }).array(),
+    // otp
+    otp: integer('otp'), // <-- Added for OTP functionality
+    otp_expiration: timestamp('otp_expiration'), // <-- Added for OTP expiration
     // relations Table
     company_branch_id: uuid('company_branch_id'),
     role_id: uuid('role_id').references(() => rolesTable.id).notNull(), 

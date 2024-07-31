@@ -18,5 +18,10 @@ export const envConfig = {
   },
   jwt:{
     secret: process.env.JWT_SECRET
+  },
+  twilio: {
+    accountSid: process.env.TWILIO_ACCOUNT_SID,
+    authToken: process.env.TWILIO_AUTH_TOKEN,
+    whatsappFrom: process.env.TWILIO_WHATSAPP_FROM // Your Twilio WhatsApp-enabled number
   }
 }

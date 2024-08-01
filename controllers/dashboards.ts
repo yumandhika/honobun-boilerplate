@@ -1,4 +1,4 @@
-import { and, count, desc, eq, not } from "drizzle-orm";
+import { and, count, desc, eq, not, or, sql, sum } from "drizzle-orm";
 import { ordersTable } from "../db/schema/orders";
 import { db } from "../db";
 import { errorResponse, paginate, successResponse, takeUniqueOrThrow } from "../utils/helpers";
@@ -15,6 +15,20 @@ export const getDashboard = async (c: Context): Promise<Response> => {
 
     if (platform == 'web') {
       response.platform = 'web'
+      const startDate: any = c.req.queries("start_date");
+      const endDate: any = c.req.queries("end_date");
+
+      const totalPriceByMonth = await getTotalPriceByMonth(startDate, endDate);
+      const totalOrderThisMonth = await getTotalOrderThisMonth(startDate, endDate);
+      const totalIncomeThisMonth = await getTotalIncomeThisMonth(startDate, endDate);
+      const totalIncome = await getTotalIncome(startDate, endDate);
+      const branchData = await getBranchData(startDate, endDate);
+
+      response.total_price_by_month = totalPriceByMonth;
+      response.total_order_this_month = totalOrderThisMonth;
+      response.total_income_this_month = totalIncomeThisMonth;
+      response.total_income = totalIncome;
+      response.branch_data = branchData;
 
     } else if (platform == 'mobile') {
       response.platform = 'mobile'
@@ -102,3 +116,165 @@ const getCarshop = async (limit: any = null) => {
     });
   }
 }
+
+
+
+const getTotalPriceByMonth = async (startDate?: string, endDate?: string) => {
+  try {
+    const conditions = [
+      or(eq(ordersTable.status, 'complete'))
+    ];
+
+    if (startDate) {
+      conditions.push(sql`${ordersTable.service_at} >= ${startDate}`);
+    }
+    if (endDate) {
+      conditions.push(sql`${ordersTable.service_at} <= ${endDate}`);
+    }
+
+    const results = await db
+      .select({
+        month: sql`date_trunc('month', ${ordersTable.service_at})`,
+        total_price: sum(ordersTable.total_price)
+      })
+      .from(ordersTable)
+      .where(and(...conditions))
+      .groupBy(sql`date_trunc('month', ${ordersTable.service_at})`)
+      .orderBy(sql`date_trunc('month', ${ordersTable.service_at})`);
+
+      return results;
+  } catch (err) {
+    console.log(err);
+    throw new HTTPException(400, {
+      message: 'Error fetching total price by month',
+      cause: err
+    });
+  }
+}
+
+const getTotalOrderThisMonth = async (startDate?: string, endDate?: string) => {
+  try {
+    const conditions = [
+      eq(ordersTable.status, 'complete'),
+      sql`date_trunc('month', ${ordersTable.service_at}) = date_trunc('month', current_date)`
+    ];
+
+    if (startDate) {
+      conditions.push(sql`${ordersTable.service_at} >= ${startDate}`);
+    }
+    if (endDate) {
+      conditions.push(sql`${ordersTable.service_at} <= ${endDate}`);
+    }
+
+    const result = await db
+      .select({
+        total_orders: count(ordersTable.id)
+      })
+      .from(ordersTable)
+      .where(and(...conditions));
+
+    return result[0].total_orders;
+  } catch (err) {
+    console.log(err);
+    throw new HTTPException(400, {
+      message: 'Error fetching total orders this month',
+      cause: err
+    });
+  }
+}
+
+const getTotalIncomeThisMonth = async (startDate?: string, endDate?: string) => {
+  try {
+    const conditions = [
+      eq(ordersTable.status, 'complete'),
+      sql`date_trunc('month', ${ordersTable.service_at}) = date_trunc('month', current_date)`
+    ];
+
+    if (startDate) {
+      conditions.push(sql`${ordersTable.service_at} >= ${startDate}`);
+    }
+    if (endDate) {
+      conditions.push(sql`${ordersTable.service_at} <= ${endDate}`);
+    }
+
+    const result = await db
+      .select({
+        total_income: sum(ordersTable.total_price)
+      })
+      .from(ordersTable)
+      .where(and(...conditions));
+
+    return result[0].total_income;
+  } catch (err) {
+    console.log(err);
+    throw new HTTPException(400, {
+      message: 'Error fetching total income this month',
+      cause: err
+    });
+  }
+}
+
+const getTotalIncome = async (startDate?: string, endDate?: string) => {
+  try {
+    const conditions = [
+      eq(ordersTable.status, 'complete')
+    ];
+
+    if (startDate) {
+      conditions.push(sql`${ordersTable.service_at} >= ${startDate}`);
+    }
+    if (endDate) {
+      conditions.push(sql`${ordersTable.service_at} <= ${endDate}`);
+    }
+
+    const result = await db
+      .select({
+        total_income: sum(ordersTable.total_price)
+      })
+      .from(ordersTable)
+      .where(and(...conditions));
+
+    return result[0].total_income;
+  } catch (err) {
+    console.log(err);
+    throw new HTTPException(400, {
+      message: 'Error fetching total income',
+      cause: err
+    });
+  }
+}
+
+const getBranchData = async (startDate?: string, endDate?: string) => {
+  try {
+    const conditions = [
+      eq(ordersTable.status, 'complete')
+    ];
+
+    if (startDate) {
+      conditions.push(sql`${ordersTable.createdAt} >= ${startDate}`);
+    }
+    if (endDate) {
+      conditions.push(sql`${ordersTable.createdAt} <= ${endDate}`);
+    }
+
+    const branchData = await db
+      .select({
+        branch_id: companyBranchTable.id,
+        branch_name: companyBranchTable.name,
+        total_orders: sql`COALESCE(count(${ordersTable.id}), 0)`,
+        total_income: sql`COALESCE(sum(${ordersTable.total_price}), 0)`
+      })
+      .from(companyBranchTable)
+      .leftJoin(ordersTable, eq(companyBranchTable.id, ordersTable.company_branch_id))
+      .where(and(...conditions))
+      .groupBy(companyBranchTable.id, companyBranchTable.name);
+
+    return branchData;
+  } catch (err) {
+    console.log(err);
+    throw new HTTPException(400, {
+      message: 'Error fetching branch data',
+      cause: err
+    });
+  }
+};

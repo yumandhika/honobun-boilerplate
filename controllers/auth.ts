@@ -12,7 +12,7 @@ import { sendOtpToWhatsApp } from "../services/twillio.service";
 
 export const login = async (c: Context): Promise<Response> => {
   try {
-    const {emailOrPhone, password} = await c.req.json();
+    const {emailOrPhone, password, fcm_token} = await c.req.json();
 
     // Find Users
     const user = await db
@@ -35,11 +35,18 @@ export const login = async (c: Context): Promise<Response> => {
       c.status(400)
       return errorResponse(c, 'Kata sandi salah')
     }
+
     const roleResult = await db
       .select()
       .from(rolesTable)
       .where(eq(rolesTable.id, user.role_id)).then(takeUniqueOrThrow)
 
+    if (fcm_token) {
+      await db.update(usersTable)
+      .set({ fcm_token })
+      .where(eq(usersTable.id, user.id));
+    }
+    
     const payload = {
       userId: user.id,
       role: roleResult.name,

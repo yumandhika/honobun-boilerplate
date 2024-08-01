@@ -138,11 +138,13 @@ export const getListOrdersByCustomerId = async (c: Context): Promise<Response> =
       .select()
       .from(ordersTable)
       .leftJoin(companyBranchTable, eq(companyBranchTable.id, ordersTable.company_branch_id))
+      .orderBy(desc(ordersTable.createdAt))
       .where(and(...conditions));
 
     const totalAddress: any = await db.select({ count: count() })
     .from(ordersTable)
     .leftJoin(companyBranchTable, eq(companyBranchTable.id, ordersTable.company_branch_id))
+    .orderBy(desc(ordersTable.createdAt))
     .where(and(...conditions)).then(takeUniqueOrThrow)
     const carShops = await paginate(orders, limit, offset);
 

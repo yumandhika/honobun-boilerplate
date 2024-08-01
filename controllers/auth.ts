@@ -1,4 +1,4 @@
-import { eq, or, and } from "drizzle-orm";
+import { eq, or, and, desc } from "drizzle-orm";
 import { db } from "../db";
 import { usersTable } from "../db/schema/users";
 import bcrypt from 'bcrypt';
@@ -22,6 +22,8 @@ export const login = async (c: Context): Promise<Response> => {
         or(eq(usersTable.email, emailOrPhone),eq(usersTable.phone, emailOrPhone)),
         eq(usersTable.status, 'active')
       ))
+      .limit(1)
+      .orderBy(desc(usersTable.createdAt))
       .then(takeUniqueOrThrow);
 
     if (!user) {
@@ -147,6 +149,8 @@ export const requestOTP = async (c: Context): Promise<Response> => {
         eq(usersTable.email, emailOrPhone),
         eq(usersTable.phone, emailOrPhone)
       ))
+      .limit(1)
+      .orderBy(desc(usersTable.createdAt))
       .then(takeUniqueOrThrow);
 
     if (!user) {

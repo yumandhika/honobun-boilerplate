@@ -5,6 +5,7 @@ import { errorResponse, paginate, successResponse, takeUniqueOrThrow } from "../
 import { HTTPException } from "hono/http-exception";
 import type { Context } from "hono";
 import { companyBranchTable } from "../db/schema/company-branch";
+import { orderStatus } from "../constants/orderStatus";
 
 export const getDashboard = async (c: Context): Promise<Response> => {
   try {
@@ -82,7 +83,14 @@ const getOrderByStatusAndCustomerId = async (status:any = 'inprogress', customer
     }
     
     const resOrders = await orders;
-    return resOrders
+    const formattedOrders = resOrders.map((order: any) => {
+      const status = orderStatus.find((data, index) => data.value == order.orders.status)
+      return {
+        ...order,
+        status_label: status ? status.label : null
+      }
+    });
+    return formattedOrders
 
   } catch (err) {
     console.log(err);

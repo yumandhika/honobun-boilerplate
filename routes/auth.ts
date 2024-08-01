@@ -21,7 +21,6 @@ export const requestOTPSchema = z.object({
 
 export const resetPasswordSchema = z.object({
   emailOrPhone: z.string().nonempty("Email atau nomor HP harus diisi"),
-  otp: z.string().length(6, "OTP harus 6 digit"), // Adjust length if needed
   newPassword: z.string().min(6, "Password baru minimal 6 karakter")
 });
 

@@ -274,3 +274,48 @@ export const verifyOTP = async (c: Context): Promise<Response> => {
     });
   }
 };
+
+export const changePassword = async (c: Context): Promise<Response> => {
+  try {
+
+    const userId = c.req.param("id");
+    const { password, confirm_password, new_password } = await c.req.json();
+    
+    if (new_password !== confirm_password) {
+      c.status(400);
+      return errorResponse(c, 'Kata sandi baru dan konfirmasi kata sandi tidak cocok');
+    }
+
+    const existingUser: any = await db
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.id, userId))
+      .then(user => user.length > 0 ? user[0] : null);
+
+    if (!existingUser) {
+      c.status(400);
+      return errorResponse(c, 'Pengguna tidak ditemukan');
+    }
+    
+    const isPasswordMatch = await bcrypt.compare(password, existingUser.password);
+
+    if (!isPasswordMatch) {
+      c.status(400);
+      return errorResponse(c, 'Kata sandi lama tidak cocok');
+    }
+
+    const hashedNewPassword = await bcrypt.hash(new_password, 10);
+    await db.update(usersTable)
+    .set({ password: hashedNewPassword })
+    .where(eq(usersTable.id, userId));
+
+    c.status(200)
+    return successMessageResponse(c, 'Berhasil mengubah password')
+
+  } catch (err) {
+    throw new HTTPException(400, {
+      message: 'Gagal mengubah password',
+      cause: err
+    });
+  }
+}

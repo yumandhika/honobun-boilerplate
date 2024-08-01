@@ -1,5 +1,5 @@
 import { Hono } from 'hono'
-import { login, register, requestOTP, resetPassword, verifyOTP } from '../controllers/auth'
+import { changePassword, login, register, requestOTP, resetPassword, verifyOTP } from '../controllers/auth'
 import { z } from 'zod';
 import { zValidator } from '@hono/zod-validator';
 
@@ -30,9 +30,18 @@ export const verifyOTPSchema = z.object({
   type: z.string().optional()
 });
 
+
+export const changePasswordSchema = z.object({
+  name: z.string().nonempty("Name is required"),
+  confirmPassword: z.string().min(6, "Password minimal 6 karakter"),
+  password: z.string().min(6, "Password minimal 6 karakter"),
+  newPassword: z.string().min(6, "Password minimal 6 karakter")
+});
+
 export const authRoute = new Hono()
   .post('/login', zValidator('json', loginSchema), login)
   .post('/register',zValidator('json', registerSchema), register)
   .post('/request-otp', zValidator('json', requestOTPSchema), requestOTP) // New route for OTP request
   .post('/reset-password', zValidator('json', resetPasswordSchema), resetPassword) // New route for password reset
   .post('/verify-otp', zValidator('json', verifyOTPSchema), verifyOTP) // New route for OTP verification
+  .post('/change-password/:id', changePassword) // New route for OTP verification

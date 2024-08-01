@@ -84,7 +84,7 @@ const getOrderByStatusAndCustomerId = async (status:any = 'inprogress', customer
     
     const resOrders = await orders;
     const formattedOrders = resOrders.map((order: any) => {
-      const status = orderStatus.find((data, index) => data.value == order.orders.status)
+      const status = orderStatus.find((data, index) => data.value == order.status)
       return {
         ...order,
         status_label: status ? status.label : null

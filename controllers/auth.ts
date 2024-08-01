@@ -18,20 +18,15 @@ export const login = async (c: Context): Promise<Response> => {
     const user = await db
       .select()
       .from(usersTable)
-      .where(or(
-        eq(usersTable.email, emailOrPhone),
-        eq(usersTable.phone, emailOrPhone)
+      .where(and(
+        or(eq(usersTable.email, emailOrPhone),eq(usersTable.phone, emailOrPhone)),
+        eq(usersTable.status, 'active')
       ))
       .then(takeUniqueOrThrow);
 
     if (!user) {
       c.status(400)
       return errorResponse(c, 'Pengguna tidak ditemukan')
-    }
-
-    if (user.status !== 'active') { // Check if user status is active
-      c.status(400);
-      return errorResponse(c, 'Status pengguna tidak aktif');
     }
 
     // Password Verification

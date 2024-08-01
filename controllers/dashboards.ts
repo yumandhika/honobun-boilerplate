@@ -35,7 +35,7 @@ export const getDashboard = async (c: Context): Promise<Response> => {
       const customerId: any = c.req.queries("customer_id");
       if (!customerId || customerId == '') {
         c.status(400)
-        return errorResponse(c, 'dibutuhkan parameter customer id')
+        return errorResponse(c, 'Id User tidak ditemukan')
       }
       const onProgressService = await getOrderByStatusAndCustomerId('complete',customerId,null, true)
       const completeService = await getOrderByStatusAndCustomerId('complete',customerId, 3, false)
@@ -54,7 +54,7 @@ export const getDashboard = async (c: Context): Promise<Response> => {
   } catch (err) {
     console.log(err);
     throw new HTTPException(400, {
-      message: 'Error fetching dashboard',
+      message: 'Gagal memuat halaman utama',
       cause: err
     });
   }
@@ -87,7 +87,7 @@ const getOrderByStatusAndCustomerId = async (status:any = 'inprogress', customer
   } catch (err) {
     console.log(err);
     throw new HTTPException(400, {
-      message: 'Error fetching orders',
+      message: 'Gagal memuat reservasi',
       cause: err
     });
   }
@@ -111,7 +111,7 @@ const getCarshop = async (limit: any = null) => {
   } catch (err) {
     console.log(err);
     throw new HTTPException(400, {
-      message: 'Error fetching carshop',
+      message: 'Gagal memuat bengkel',
       cause: err
     });
   }
@@ -146,7 +146,7 @@ const getTotalPriceByMonth = async (startDate?: string, endDate?: string) => {
   } catch (err) {
     console.log(err);
     throw new HTTPException(400, {
-      message: 'Error fetching total price by month',
+      message: 'Gagal memuat total keuntungan per bulan',
       cause: err
     });
   }
@@ -177,7 +177,7 @@ const getTotalOrderThisMonth = async (startDate?: string, endDate?: string) => {
   } catch (err) {
     console.log(err);
     throw new HTTPException(400, {
-      message: 'Error fetching total orders this month',
+      message: 'Gagal memuat total reservasi bulan ini',
       cause: err
     });
   }
@@ -208,7 +208,7 @@ const getTotalIncomeThisMonth = async (startDate?: string, endDate?: string) => 
   } catch (err) {
     console.log(err);
     throw new HTTPException(400, {
-      message: 'Error fetching total income this month',
+      message: 'Gagal memuat total keuntungan bulan ini',
       cause: err
     });
   }
@@ -238,7 +238,7 @@ const getTotalIncome = async (startDate?: string, endDate?: string) => {
   } catch (err) {
     console.log(err);
     throw new HTTPException(400, {
-      message: 'Error fetching total income',
+      message: 'Gagal memuat total keuntungan',
       cause: err
     });
   }
@@ -273,7 +273,7 @@ const getBranchData = async (startDate?: string, endDate?: string) => {
   } catch (err) {
     console.log(err);
     throw new HTTPException(400, {
-      message: 'Error fetching branch data',
+      message: 'Gagal membuat bengkel cabang',
       cause: err
     });
   }

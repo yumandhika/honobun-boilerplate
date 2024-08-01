@@ -14,7 +14,7 @@ export const getListRole = async (c: Context): Promise<Response> => {
 
   } catch (err) {
     throw new HTTPException(400, { 
-      message: 'Error fetching districts',
+      message: 'Gagal memuat distrik',
       cause: err
     });
   }

@@ -30,7 +30,7 @@ export const getListCustomerAddresses = async (c: Context): Promise<Response> =>
   } catch (err) {
     console.log(err)
     throw new HTTPException(400, { 
-      message: 'Error fetching addresses',
+      message: 'Gagal memuat alamat',
       cause: err
     });
   }
@@ -55,12 +55,12 @@ export const createCustomerAddress = async (c: Context): Promise<Response> => {
     await db.insert(customerAddressesTable).values(nCA);
 
     c.status(201)
-    return successMessageResponse(c, 'success create address')
+    return successMessageResponse(c, 'Berhasil membuat alamat')
 
   } catch (err) {
     console.log(err)
     throw new HTTPException(400, { 
-      message: 'Error create address',
+      message: 'Gagal membuat alamat',
       cause: err
     });
   }
@@ -86,11 +86,11 @@ export const updateCustomerAddress = async (c: Context): Promise<Response> => {
       .where(eq(customerAddressesTable.id, addressId));
 
     c.status(200)
-    return successMessageResponse(c, 'address updated successfully')
+    return successMessageResponse(c, 'Berhasil mengubah alamat')
 
   } catch (err) {
     throw new HTTPException(400, { 
-      message: 'Error updating address',
+      message: 'Gagal mengubah alamat',
       cause: err
     });
   }
@@ -105,10 +105,10 @@ export const deleteAddress = async (c: Context): Promise<Response> => {
       .where(eq(customerAddressesTable.id, addressId));
 
     c.status(200)
-    return successMessageResponse(c, 'Address deleted successfully')
+    return successMessageResponse(c, 'Berhasil menghapus alamat')
   } catch (err) {
     throw new HTTPException(400, {
-      message: 'Error deleting Address',
+      message: 'Gagal menghapus alamat',
       cause: err
     });
   }

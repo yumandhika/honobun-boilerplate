@@ -65,8 +65,8 @@ export const createOrders = async (c: Context): Promise<Response> => {
     const lCO = {
       order_id: orderId,
       status: 'pending',
-      title: 'menunggu antrian',
-      description: 'Order baru telah di buat.'
+      title: 'Menunggu Antrian',
+      description: 'Reservasi baru telah di buat.'
     };
 
     await db.insert(orderLogsTable).values(lCO);
@@ -77,7 +77,7 @@ export const createOrders = async (c: Context): Promise<Response> => {
   } catch (err) {
     console.log(err)
     throw new HTTPException(400, { 
-      message: 'Error create order',
+      message: 'Gagal membuat reservasi',
       cause: err
     });
   }
@@ -113,7 +113,7 @@ export const getListOrders = async (c: Context): Promise<Response> => {
   } catch (err) {
     console.log(err);
     throw new HTTPException(400, {
-      message: 'Error fetching orders list',
+      message: 'Gagal memuat daftar reservasi',
       cause: err
     });
   }
@@ -162,7 +162,7 @@ export const getListOrdersByCustomerId = async (c: Context): Promise<Response> =
   } catch (err) {
     console.log(err);
     throw new HTTPException(400, {
-      message: 'Error fetching orders list',
+      message: 'Gagal memuat daftar reservasi',
       cause: err
     });
   }
@@ -195,15 +195,13 @@ export const getDetailOrderById = async (c: Context): Promise<Response> => {
     const ordersItems = await orderItems;
     const orderlog = await orderLogs;
     const shops = await carshop;
-    
-    const validStatuses = new Set(['delivery', 'complete', 'waiting-payment-confirmation']);
 
     const status = orderStatus.find((data) => data.value === orderDetail.status);
 
     const res = {
       ...orderDetail,
-      is_able_to_pay: validStatuses.has(orderDetail.status) ?  true : false,
-      is_able_to_reschdule: orderDetail.status == 'pending' ? true : false,
+      is_able_to_pay: orderDetail.status == 'waiting-payment' && orderDetail.payment_proof_image === null ?  true : false,
+      is_able_to_reschedule: orderDetail.status == 'pending' || orderDetail.status == 'reschedule' ? true : false,
       status_label: status ? status.label : null,
       order_logs: orderlog,
       items: ordersItems,
@@ -215,7 +213,7 @@ export const getDetailOrderById = async (c: Context): Promise<Response> => {
   } catch (err) {
     console.log(err);
     throw new HTTPException(400, {
-      message: 'Error fetching order detail',
+      message: 'Gagal memuat rincian reservasi',
       cause: err
     });
   }
@@ -277,7 +275,7 @@ export const checkAvailability = async (c: Context): Promise<Response> => {
   } catch (err) {
     console.log(err);
     throw new HTTPException(400, {
-      message: 'Error checking availability',
+      message: 'Gagal cek ketersediaan',
       cause: err
     });
   }
@@ -322,11 +320,11 @@ export const createOrderItem = async (c: Context): Promise<Response> => {
 
 
     c.status(201);
-    return successResponse(c, 'Order item created successfully');
+    return successResponse(c, 'Berhasil menambahkan order item');
   } catch (err) {
     console.log(err);
     throw new HTTPException(400, {
-      message: 'Error creating order item',
+      message: 'Gagal menambahkan order item',
       cause: err
     });
   }
@@ -343,7 +341,7 @@ export const getOrderItemById = async (c: Context): Promise<Response> => {
   } catch (err) {
     console.log(err);
     throw new HTTPException(400, {
-      message: 'Error retrieving order item',
+      message: 'Gagal memuat order item',
       cause: err
     });
   }
@@ -369,7 +367,7 @@ export const updateOrderItem = async (c: Context): Promise<Response> => {
 
     if (result.count === 0) {
       c.status(404);
-      return errorResponse(c, 'Order item not found');
+      return errorResponse(c, 'Order item tidak ditemukan');
     }
 
     // update price
@@ -389,11 +387,11 @@ export const updateOrderItem = async (c: Context): Promise<Response> => {
     // end update price
 
     c.status(200);
-    return successResponse(c, 'Order item updated successfully');
+    return successResponse(c, 'Berhasil mengubah data order item');
   } catch (err) {
     console.log(err);
     throw new HTTPException(400, {
-      message: 'Error updating order item',
+      message: 'Gagal mengubah data order item',
       cause: err
     });
   }
@@ -408,7 +406,7 @@ export const deleteOrderItem = async (c: Context): Promise<Response> => {
 
     if (result.count === 0) {
       c.status(404);
-      return errorResponse(c, 'Order item not found');
+      return errorResponse(c, 'Order item tidak ditemukan');
     }
 
     // update price
@@ -427,11 +425,11 @@ export const deleteOrderItem = async (c: Context): Promise<Response> => {
     // end update price
     
     c.status(200);
-    return successResponse(c, 'Order item deleted successfully');
+    return successResponse(c, 'Berhasil menghapus order item');
   } catch (err) {
     console.log(err);
     throw new HTTPException(400, {
-      message: 'Error deleting order item',
+      message: 'Gagal menghapus order item',
       cause: err
     });
   }
@@ -454,7 +452,7 @@ export const getListOrderItem = async (c: Context): Promise<Response> => {
 
     if (items.length === 0) {
       c.status(404);
-      return errorResponse(c, 'No items found for the given order ID');
+      return errorResponse(c, 'Tidak ada item yang ditemukan untuk item id');
     }
 
     c.status(200);
@@ -462,7 +460,7 @@ export const getListOrderItem = async (c: Context): Promise<Response> => {
   } catch (err) {
     console.log(err);
     throw new HTTPException(400, {
-      message: 'Error retrieving order items',
+      message: 'Gagal memuat order items',
       cause: err
     });
   }
@@ -477,7 +475,7 @@ export const updateOrderStatus = async (c: Context): Promise<Response> => {
     const validStatuses = new Set(orderStatus.map(status => status.value));
     if (!validStatuses.has(status)) {
       c.status(400);
-      return errorResponse(c, 'Invalid status provided');
+      return errorResponse(c, 'Status yang diberikan tidak valid');
     }
 
     // Update status order berdasarkan ID
@@ -493,22 +491,22 @@ export const updateOrderStatus = async (c: Context): Promise<Response> => {
       order_id: id,
       status: itemStat?.value,
       title: itemStat?.label,
-      description: 'Status Di Ubah Admin'
+      description: 'Status di ubah admin'
     };
   
     await db.insert(orderLogsTable).values(lCO);
 
     if (result.count === 0) {
       c.status(404);
-      return errorResponse(c, 'Order not found');
+      return errorResponse(c, 'Reservasi tidak ditemukan');
     }
 
     c.status(200);
-    return successResponse(c, 'Order status updated successfully');
+    return successResponse(c, 'Berhasil mengubah status reservasi');
   } catch (err) {
     console.log(err);
     throw new HTTPException(400, {
-      message: 'Error updating order status',
+      message: 'Gagal mengubah status reservasi',
       cause: err
     });
   }
@@ -535,23 +533,23 @@ export const updateOrderSchedule = async (c: Context): Promise<Response> => {
     const lCO = {
       order_id: id,
       status: 'pending',
-      title: 'menunggu antrian',
-      description: 'User Reschedule Order.'
+      title: 'Menunggu Antrian',
+      description: 'Pengguna menjadwalkan ulang reservasi'
     };
   
     await db.insert(orderLogsTable).values(lCO);
 
     if (result.count === 0) {
       c.status(404);
-      return errorResponse(c, 'Order not found');
+      return errorResponse(c, 'Reservasi tidak ditemukan');
     }
 
     c.status(200);
-    return successResponse(c, 'Order service at updated successfully');
+    return successResponse(c, 'Berhasil mengubah waktu servis reservasi');
   } catch (err) {
     console.log(err);
     throw new HTTPException(400, {
-      message: 'Error updating order service at',
+      message: 'Gagal mengubah waktu servis reservasi',
       cause: err
     });
   }
@@ -582,23 +580,23 @@ export const updateOrderMechanic = async (c: Context): Promise<Response> => {
     const lCO = {
       order_id: id,
       status: 'pending',
-      title: 'menunggu antrian',
-      description: 'Mechanic Telah Di inputkan.'
+      title: 'Menunggu Antrian',
+      description: 'Mechanic telah di masukkan.'
     };
   
     await db.insert(orderLogsTable).values(lCO);
 
     if (result.count === 0) {
       c.status(404);
-      return errorResponse(c, 'Order not found');
+      return errorResponse(c, 'Reservasi tidak ditemukan');
     }
 
     c.status(200);
-    return successResponse(c, 'Order service at updated successfully');
+    return successResponse(c, 'Berhasil mengubah waktu servis reservasi');
   } catch (err) {
     console.log(err);
     throw new HTTPException(400, {
-      message: 'Error updating order service at',
+      message: 'Gagal mengubah waktu servis reservasi',
       cause: err
     });
   }
@@ -630,22 +628,22 @@ export const updateOrderPaymentType = async (c: Context): Promise<Response> => {
       order_id: id,
       status: 'waiting-payment-confirmation',
       title: 'Menunggu Konfirmasi Pembayaran',
-      description: 'Pembayaran telah di ajukan, Menunggu Admin konfirmasi pembayaran.'
+      description: 'Pembayaran telah di ajukan, menunggu admin konfirmasi pembayaran.'
     };
   
     await db.insert(orderLogsTable).values(lCO);
 
     if (result.count === 0) {
       c.status(404);
-      return errorResponse(c, 'Order not found');
+      return errorResponse(c, 'Reservasi tidak ditemukan');
     }
 
     c.status(200);
-    return successResponse(c, 'Order service at updated successfully');
+    return successResponse(c, 'Berhasil mengubah waktu servis reservasi');
   } catch (err) {
     console.log(err);
     throw new HTTPException(400, {
-      message: 'Error updating order service at',
+      message: 'Gagal mengubah waktu servis reservasi',
       cause: err
     });
   }
@@ -676,8 +674,8 @@ export const updateOrderReschedule = async (c: Context): Promise<Response> => {
     const lCO = {
       order_id: id,
       status: 'reschedule',
-      title: 'Jadwal Diubah, Menunggu Antrian (Reschedule)',
-      description: 'Pengajuan reschedule telah di kirim'
+      title: 'Jadwal diubah, menunggu antrian',
+      description: 'Pengajuan penjadwalan ulang telah di kirim'
     };
   
     await db.insert(orderLogsTable).values(lCO);
@@ -688,11 +686,11 @@ export const updateOrderReschedule = async (c: Context): Promise<Response> => {
     }
 
     c.status(200);
-    return successResponse(c, 'Order service at updated successfully');
+    return successResponse(c, 'Berhasil mengubah waktu servis reservasi');
   } catch (err) {
     console.log(err);
     throw new HTTPException(400, {
-      message: 'Error updating order service at',
+      message: 'Gagal mengubah waktu servis reservasi',
       cause: err
     });
   }

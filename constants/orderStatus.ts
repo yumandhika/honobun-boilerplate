@@ -32,11 +32,11 @@ export const orderStatus = [
     value: 'delivery'
   },
   {
-    label: 'selesai',
+    label: 'Selesai',
     value: 'complete'
   },
   {
-    label: 'Jadwal Diubah, Menunggu Antrian (Reschedule)',
+    label: 'Jadwal Diubah, Menunggu Antrian',
     value: 'reschedule'
   },
 ]

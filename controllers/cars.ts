@@ -30,7 +30,7 @@ export const getListCustomerCars = async (c: Context): Promise<Response> => {
   } catch (err) {
     console.log(err)
     throw new HTTPException(400, { 
-      message: 'Error fetching cars',
+      message: 'Gagal memuat mobil',
       cause: err
     });
   }
@@ -54,12 +54,12 @@ export const createCustomerCar = async (c: Context): Promise<Response> => {
     await db.insert(customerCarsTable).values(nCC);
 
     c.status(201)
-    return successMessageResponse(c, 'success create car')
+    return successMessageResponse(c, 'Berhasil menambahkan mobil')
 
   } catch (err) {
     console.log(err)
     throw new HTTPException(400, { 
-      message: 'Error create car',
+      message: 'Gagal menambahkan mobil',
       cause: err
     });
   }
@@ -84,11 +84,11 @@ export const updateCustomerCar = async (c: Context): Promise<Response> => {
       .where(eq(customerCarsTable.id, carId));
 
     c.status(200)
-    return successMessageResponse(c, 'car updated successfully')
+    return successMessageResponse(c, 'Berhasil mengubah data mobil')
 
   } catch (err) {
     throw new HTTPException(400, { 
-      message: 'Error updating car',
+      message: 'Gagal mengubah data mobil',
       cause: err
     });
   }
@@ -103,10 +103,10 @@ export const deleteCar = async (c: Context): Promise<Response> => {
       .where(eq(customerCarsTable.id, carId));
 
     c.status(200)
-    return successMessageResponse(c, 'car deleted successfully')
+    return successMessageResponse(c, 'Berhasil menghapus data mobil')
   } catch (err) {
     throw new HTTPException(400, {
-      message: 'Error deleting car',
+      message: 'Gagal menghapus data mobil',
       cause: err
     });
   }

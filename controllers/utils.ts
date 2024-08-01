@@ -11,14 +11,14 @@ export const uploadImage = async (c: Context): Promise<Response> => {
     const file = body['file'];
        
     if (!file) {
-      throw new HTTPException(400, { message: 'File is required' });
+      throw new HTTPException(400, { message: 'File harus diisi' });
     }
 
     const imgurClientId = envConfig.imgur.client_id;
     const imgurApiUrl = envConfig.imgur.url;
 
     if (!imgurApiUrl) {
-      throw new HTTPException(400, { message: 'Imgur api not found' }); 
+      throw new HTTPException(400, { message: 'Gambar tidak ditemukan' }); 
     }
 
     const formData = new FormData();
@@ -35,12 +35,12 @@ export const uploadImage = async (c: Context): Promise<Response> => {
       c.status(201);
       return successResponse(c, { link: response.data.data.link });
     } else {
-      throw new HTTPException(500, { message: 'Failed to upload image to Imgur' });
+      throw new HTTPException(500, { message: 'Gagal upload Image' });
     }
 
   } catch (err) {
     throw new HTTPException(400, { 
-      message: 'Error create order',
+      message: 'Gagal membuat reservasi',
       cause: err
     });
   }

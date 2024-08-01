@@ -4,30 +4,31 @@ import { z } from 'zod';
 import { zValidator } from '@hono/zod-validator';
 
 export const loginSchema = z.object({
-  emailOrPhone: z.string().nonempty("Email or phone number is required"),
-  password: z.string().min(6, "Password must be at least 6 characters long")
+  emailOrPhone: z.string().nonempty("Email atau nomor HP harus diisi"),
+  password: z.string().min(6, "Password minimal 6 karakter")
 });
 
 export const registerSchema = z.object({
   name: z.string().nonempty("Name is required"),
   phone: z.string().nonempty("Phone number is required"),
-  password: z.string().min(6, "Password must be at least 6 characters long"),
+  password: z.string().min(6, "Password minimal 6 karakter"),
   status: z.string().optional()
 });
 
 export const requestOTPSchema = z.object({
-  emailOrPhone: z.string().nonempty("Email or phone number is required"),
+  emailOrPhone: z.string().nonempty("Email atau nomor HP harus diisi"),
 });
 
 export const resetPasswordSchema = z.object({
-  emailOrPhone: z.string().nonempty("Email or phone number is required"),
-  otp: z.string().length(6, "OTP must be 6 digits long"), // Adjust length if needed
-  newPassword: z.string().min(6, "New password must be at least 6 characters long")
+  emailOrPhone: z.string().nonempty("Email atau nomor HP harus diisi"),
+  otp: z.string().length(6, "OTP harus 6 digit"), // Adjust length if needed
+  newPassword: z.string().min(6, "Password baru minimal 6 karakter")
 });
 
 export const verifyOTPSchema = z.object({
-  emailOrPhone: z.string().nonempty("Email or phone number is required"),
-  otp: z.string().length(6, "OTP must be 6 digits long") // Adjust length if needed
+  emailOrPhone: z.string().nonempty("Email a"),
+  otp: z.string().length(6, "OTP harus 6 digit"), // Adjust length if needed
+  type: z.string().optional()
 });
 
 export const authRoute = new Hono()

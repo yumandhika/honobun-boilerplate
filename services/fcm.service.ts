@@ -6,20 +6,20 @@ export const FcmMessage = (config: { title: any; description: any; data: any; to
   const code = String(unixTimestamp);
 
   const msg = {
-    notification: {
-      title: config.title,
-      body: config.description,
-    },
+    // notification: {
+    //   title: config.title,
+    //   body: config.description,
+    // },
     data: {
       ...config.data,
       code,
     },
-    android: {
-      notification: {
-        sound: 'default',
-        click_action: 'notification',
-      },
-    },
+    // android: {
+    //   notification: {
+    //     sound: 'default',
+    //     click_action: 'notification',
+    //   },
+    // },
     apns: {
       payload: {
         aps: {
@@ -29,7 +29,7 @@ export const FcmMessage = (config: { title: any; description: any; data: any; to
     },
     token: config.token,
   };
-
+  
   message
     .send(msg)
     .then((responseMessage: any) => {

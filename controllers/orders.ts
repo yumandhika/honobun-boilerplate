@@ -8,6 +8,8 @@ import { orderLogsTable } from "../db/schema/orderLogs";
 import { orderItemsTable } from "../db/schema/orderItems";
 import { orderStatus } from "../constants/orderStatus";
 import { companyBranchTable } from "../db/schema/company-branch";
+import { FcmMessage } from "../services/fcm.service";
+import { usersTable } from "../db/schema/users";
 
 
 export const createOrders = async (c: Context): Promise<Response> => {
@@ -283,7 +285,6 @@ export const checkAvailability = async (c: Context): Promise<Response> => {
   }
 };
 
-
 export const createOrderItem = async (c: Context): Promise<Response> => {
   try {
     const {
@@ -471,7 +472,7 @@ export const getListOrderItem = async (c: Context): Promise<Response> => {
 export const updateOrderStatus = async (c: Context): Promise<Response> => {
   try {
     const id = c.req.param('id');
-    const { status } = await c.req.json();
+    const { status, description } = await c.req.json();
 
     // Validasi status (pastikan status yang diberikan valid)
     const validStatuses = new Set(orderStatus.map(status => status.value));
@@ -487,13 +488,22 @@ export const updateOrderStatus = async (c: Context): Promise<Response> => {
       .where(eq(ordersTable.id, id))
       .execute();
 
+    const selectedOrder: any = await db.select().from(ordersTable).where(eq(ordersTable.id, id)).then(takeUniqueOrThrow);
+
+    if (!selectedOrder) {
+      c.status(400);
+      return errorResponse(c, 'Status yang diberikan tidak valid');
+    }
+    
+    const selectecCustomer = await db.select().from(usersTable).where(eq(usersTable.id, selectedOrder.customer_id)).then(takeUniqueOrThrow);
+
     const itemStat = orderStatus.find(x => x.value === status);
 
     const lCO = {
       order_id: id,
       status: itemStat?.value,
       title: itemStat?.label,
-      description: 'Status di ubah admin'
+      description: description ? description : null
     };
   
     await db.insert(orderLogsTable).values(lCO);
@@ -502,6 +512,19 @@ export const updateOrderStatus = async (c: Context): Promise<Response> => {
       c.status(404);
       return errorResponse(c, 'Reservasi tidak ditemukan');
     }
+
+    FcmMessage({
+      title: '',
+      description: '',
+      token: selectecCustomer.fcm_token,
+      data: {
+        title: itemStat?.label,
+        message: description ? description : null, 
+        order_id: selectedOrder.id,
+        order_status: itemStat?.value,
+        notification_type: "service_status_changed",
+      },
+    })
 
     c.status(200);
     return successResponse(c, 'Berhasil mengubah status reservasi');
@@ -531,15 +554,6 @@ export const updateOrderSchedule = async (c: Context): Promise<Response> => {
       .set(data)
       .where(eq(ordersTable.id, id))
       .execute();
-
-    const lCO = {
-      order_id: id,
-      status: 'pending',
-      title: 'Menunggu Antrian',
-      description: 'Pengguna menjadwalkan ulang reservasi'
-    };
-  
-    await db.insert(orderLogsTable).values(lCO);
 
     if (result.count === 0) {
       c.status(404);
@@ -578,15 +592,6 @@ export const updateOrderMechanic = async (c: Context): Promise<Response> => {
       .set(data)
       .where(eq(ordersTable.id, id))
       .execute();
-
-    const lCO = {
-      order_id: id,
-      status: 'pending',
-      title: 'Menunggu Antrian',
-      description: 'Mechanic telah di masukkan.'
-    };
-  
-    await db.insert(orderLogsTable).values(lCO);
 
     if (result.count === 0) {
       c.status(404);

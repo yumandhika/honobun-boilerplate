@@ -235,6 +235,8 @@ export const verifyOTP = async (c: Context): Promise<Response> => {
       .select()
       .from(usersTable)
       .where(or(...conditions))
+      .limit(1)
+      .orderBy(desc(usersTable.createdAt))
       .then(takeUniqueOrThrow);
 
     if (!user) {

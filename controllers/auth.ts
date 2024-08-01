@@ -181,19 +181,13 @@ export const resetPassword = async (c: Context): Promise<Response> => {
       .from(usersTable)
       .where(or(
         eq(usersTable.email, emailOrPhone),
-        eq(usersTable.phone, emailOrPhone)
+        and(eq(usersTable.phone, emailOrPhone), eq(usersTable.status, 'active'))
       ))
       .then(takeUniqueOrThrow);
 
     if (!user) {
       c.status(400);
       return errorResponse(c, 'Pengguna tidak ditemukan');
-    }
-
-    // Check OTP
-    if (user.otp !== otp || new Date() > new Date(user.otp_expiration)) {
-      c.status(400);
-      return errorResponse(c, 'OTP salah atau sudah kedaluwarsa');
     }
 
     // Hash new password

@@ -11,7 +11,7 @@ export const usersTable = pgTable(
     email: varchar('email', { length: 256 }),
     password: varchar('password', { length: 100 }).notNull(),
     status: varchar('status', { length: 50 }).default('active'),
-    fcm_token: varchar('fcm_token', { length: 256 }).array(),
+    fcm_token: varchar('fcm_token', { length: 256 }),
     // otp
     otp: integer('otp'), // <-- Added for OTP functionality
     otp_expiration: timestamp('otp_expiration'), // <-- Added for OTP expiration

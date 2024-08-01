@@ -1,0 +1,1 @@
+ALTER TABLE "users" ALTER COLUMN "fcm_token" SET DATA TYPE varchar(256);

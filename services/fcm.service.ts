@@ -6,7 +6,6 @@ export const FcmMessage = (config: { title: any; description: any; data: any; to
   const code = String(unixTimestamp);
 
   const msg = {
-    
     notification: {
       title: config.title,
       body: config.description,

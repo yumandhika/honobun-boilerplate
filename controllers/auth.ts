@@ -1,4 +1,4 @@
-import { eq, or } from "drizzle-orm";
+import { eq, or, and } from "drizzle-orm";
 import { db } from "../db";
 import { usersTable } from "../db/schema/users";
 import bcrypt from 'bcrypt';
@@ -26,19 +26,19 @@ export const login = async (c: Context): Promise<Response> => {
 
     if (!user) {
       c.status(400)
-      return errorResponse(c, 'user not found')
+      return errorResponse(c, 'Pengguna tidak ditemukan')
     }
 
     if (user.status !== 'active') { // Check if user status is active
       c.status(400);
-      return errorResponse(c, 'User status is not active');
+      return errorResponse(c, 'Status pengguna tidak aktif');
     }
 
     // Password Verification
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       c.status(400)
-      return errorResponse(c, 'invalid password')
+      return errorResponse(c, 'Kata sandi salah')
     }
     const roleResult = await db
       .select()
@@ -76,8 +76,9 @@ export const register = async (c: Context): Promise<Response> => {
     }
   
     if (phone) {
-      conditions.push(eq(usersTable.phone, phone));
+      conditions.push(and(eq(usersTable.phone, phone), eq(usersTable.status, 'active')));
     }
+
     // Check if user already exists
     const existingUser: any = await db
       .select()
@@ -87,7 +88,7 @@ export const register = async (c: Context): Promise<Response> => {
 
     if (existingUser) {
       c.status(400)
-      return errorResponse(c, 'User with this email already exists')
+      return errorResponse(c, 'Sudah ada pengguna dengan email atau nomor hp yang sama')
     }
 
     const roleResult = await db
@@ -96,7 +97,7 @@ export const register = async (c: Context): Promise<Response> => {
       .where(eq(rolesTable.name, 'customer'))
       .then(results => {
         if (results.length === 0) {
-          throw new Error('Role "customer" not found');
+          throw new Error('Role "customer" tidak ditemukan');
         }
         return results[0].id;
       });
@@ -121,17 +122,16 @@ export const register = async (c: Context): Promise<Response> => {
     await db.insert(usersTable).values(newUser);
 
     c.status(201)
-    return successMessageResponse(c, 'success register')
+    return successMessageResponse(c, 'Berhasil mendaftar')
 
   } catch (err) {
     console.log(err)
     throw new HTTPException(400, { 
-      message: 'Error registering user',
+      message: 'Gagal mendaftar',
       cause: err
     });
   }
-}
-
+};
 
 export const requestOTP = async (c: Context): Promise<Response> => {
   try {
@@ -149,7 +149,7 @@ export const requestOTP = async (c: Context): Promise<Response> => {
 
     if (!user) {
       c.status(400);
-      return errorResponse(c, 'User not found');
+      return errorResponse(c, 'Pengguna tidak ditemukan');
     }
 
     // Generate OTP
@@ -162,15 +162,15 @@ export const requestOTP = async (c: Context): Promise<Response> => {
       .where(eq(usersTable.id, user.id));
 
     // TODO: Send OTP via email or SMS
-    console.log(`OTP for ${emailOrPhone}: ${otp}`);
+    console.log(`OTP untuk ${emailOrPhone}: ${otp}`);
     // Send OTP via WhatsApp
     await sendOtpToWhatsApp(convertToInternationalFormat(user.phone), otp.toString());
 
-    return successMessageResponse(c, 'OTP sent');
+    return successMessageResponse(c, 'OTP terkirim');
 
   } catch (err) {
     throw new HTTPException(400, {
-      message: 'Error requesting OTP',
+      message: 'Gagal meminta OTP',
       cause: err
     });
   }
@@ -192,13 +192,13 @@ export const resetPassword = async (c: Context): Promise<Response> => {
 
     if (!user) {
       c.status(400);
-      return errorResponse(c, 'User not found');
+      return errorResponse(c, 'Pengguna tidak ditemukan');
     }
 
     // Check OTP
     if (user.otp !== otp || new Date() > new Date(user.otp_expiration)) {
       c.status(400);
-      return errorResponse(c, 'Invalid or expired OTP');
+      return errorResponse(c, 'OTP salah atau sudah kedaluwarsa');
     }
 
     // Hash new password
@@ -209,11 +209,11 @@ export const resetPassword = async (c: Context): Promise<Response> => {
       .set({ password: hashedPassword, otp: null, otp_expiration: null })
       .where(eq(usersTable.id, user.id));
 
-    return successMessageResponse(c, 'Password reset successfully');
+    return successMessageResponse(c, 'Berhasil reset kata sandi');
 
   } catch (err) {
     throw new HTTPException(400, {
-      message: 'Error resetting password',
+      message: 'Gagal reset kata sandi',
       cause: err
     });
   }
@@ -221,20 +221,25 @@ export const resetPassword = async (c: Context): Promise<Response> => {
 
 export const verifyOTP = async (c: Context): Promise<Response> => {
   try {
-    const { emailOrPhone, otp } = await c.req.json();
+    const { emailOrPhone, otp, type } = await c.req.json();
+
+    const conditions = [];
+    conditions.push(eq(usersTable.email, emailOrPhone));
+    if (type == 'forgot-password') {
+      conditions.push(and(eq(usersTable.phone, emailOrPhone), eq(usersTable.status, 'active')));
+    } else {
+      conditions.push(eq(usersTable.phone, emailOrPhone));
+    }
 
     const user: any = await db
       .select()
       .from(usersTable)
-      .where(or(
-        eq(usersTable.email, emailOrPhone),
-        eq(usersTable.phone, emailOrPhone)
-      ))
+      .where(or(...conditions))
       .then(takeUniqueOrThrow);
 
     if (!user) {
       c.status(400);
-      return errorResponse(c, 'User not found');
+      return errorResponse(c, 'Pengguna tidak ditemukan');
     }
     
     // Ensure otp is compared as a string
@@ -247,7 +252,7 @@ export const verifyOTP = async (c: Context): Promise<Response> => {
 
     if (otpStored != otpProvided || now > otpExpiration) {
       c.status(400);
-      return errorResponse(c, 'Invalid or expired OTP');
+      return errorResponse(c, 'OTP salah atau sudah kedaluwarsa');
     }
 
     // Mark user as active and clear OTP details
@@ -259,11 +264,10 @@ export const verifyOTP = async (c: Context): Promise<Response> => {
       })
       .where(eq(usersTable.id, user.id));
 
-    return successMessageResponse(c, 'User activated successfully');
-
+    return successMessageResponse(c, 'Pengguna berhasil diaktivasi');
   } catch (err) {
     throw new HTTPException(400, {
-      message: 'Error verifying OTP',
+      message: 'Gagal verifikasi OTP',
       cause: err
     });
   }

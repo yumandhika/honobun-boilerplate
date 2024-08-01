@@ -23,7 +23,7 @@ export const getListCarShops = async (c: Context): Promise<Response> => {
   } catch (err) {
     console.log(err)
     throw new HTTPException(400, { 
-      message: 'Error fetching carShops',
+      message: 'Gagal memuat bengkel',
       cause: err
     });
   }
@@ -52,12 +52,12 @@ export const createCarShops = async (c: Context): Promise<Response> => {
     await db.insert(companyBranchTable).values(nCC);
 
     c.status(201)
-    return successMessageResponse(c, 'success create car shops')
+    return successMessageResponse(c, 'Berhasil menambahkan bengkel')
 
   } catch (err) {
     console.log(err)
     throw new HTTPException(400, { 
-      message: 'Error create car',
+      message: 'Gagal menambahkan bengkel',
       cause: err
     });
   }
@@ -88,11 +88,11 @@ export const updateCarShops = async (c: Context): Promise<Response> => {
       .where(eq(companyBranchTable.id, carshopsId));
 
     c.status(200)
-    return successMessageResponse(c, 'carshops updated successfully')
+    return successMessageResponse(c, 'Berhasil mengubah data bengkel')
 
   } catch (err) {
     throw new HTTPException(400, { 
-      message: 'Error updating carshops',
+      message: 'Gagal mengubah data bengkel',
       cause: err
     });
   }
@@ -107,10 +107,10 @@ export const deleteCarShops = async (c: Context): Promise<Response> => {
       .where(eq(companyBranchTable.id, carshopsId));
 
     c.status(200)
-    return successMessageResponse(c, 'carshops deleted successfully')
+    return successMessageResponse(c, 'Berhasil menghapus data bengkel')
   } catch (err) {
     throw new HTTPException(400, {
-      message: 'Error deleting carshops',
+      message: 'Gagal menghapus data bengkel',
       cause: err
     });
   }
@@ -132,7 +132,7 @@ export const getDetailCarshop = async (c: Context): Promise<Response> => {
   } catch (err) {
     console.log(err);
     throw new HTTPException(400, { 
-      message: 'Error fetching carshop details',
+      message: 'Gagal memuat rincian bengkel',
       cause: err
     });
   }

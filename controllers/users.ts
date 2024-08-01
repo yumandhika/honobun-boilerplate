@@ -80,7 +80,7 @@ export const getListUsers = async (c: Context): Promise<Response> => {
   } catch (err) {
     console.log(err)
     throw new HTTPException(400, { 
-      message: 'Error fetching users',
+      message: 'Gagal memuat pengguna',
       cause: err
     });
   }
@@ -102,7 +102,7 @@ export const createUser = async (c: Context): Promise<Response> => {
 
     if (existingUser) {
       c.status(400)
-      return errorResponse(c, 'User with this email already exists')
+      return errorResponse(c, 'Pengguna dengan email ini sudah ada')
     }
 
     // Hash password
@@ -125,11 +125,11 @@ export const createUser = async (c: Context): Promise<Response> => {
     await db.insert(usersTable).values(newUser);
 
     c.status(201)
-    return successMessageResponse(c, 'success create user')
+    return successMessageResponse(c, 'Berhasil menambahkan pengguna')
 
   } catch (err) {
     throw new HTTPException(400, { 
-      message: 'Error create user',
+      message: 'Gagal menambahkan pengguna',
       cause: err
     });
   }
@@ -149,7 +149,7 @@ export const updateUser = async (c: Context): Promise<Response> => {
 
     if (!existingUser) {
       c.status(404)
-      return errorResponse(c, 'User not found')
+      return errorResponse(c, 'Pengguna tidak ditemukan')
     }
 
     // Check for email or phone duplication
@@ -166,7 +166,7 @@ export const updateUser = async (c: Context): Promise<Response> => {
 
     if (duplicateUser) {
       c.status(400)
-      return errorResponse(c, 'Email or phone number already in use')
+      return errorResponse(c, 'Email atau nomor hp sudah terdaftar')
     }
 
     let updatedUser = {
@@ -193,11 +193,11 @@ export const updateUser = async (c: Context): Promise<Response> => {
       .where(eq(usersTable.id, userId));
 
     c.status(200)
-    return successMessageResponse(c, 'User updated successfully')
+    return successMessageResponse(c, 'Berhasil mengubah data pengguna')
 
   } catch (err) {
     throw new HTTPException(400, { 
-      message: 'Error updating user',
+      message: 'Gagal mengubah data pengguna',
       cause: err
     });
   }
@@ -217,7 +217,7 @@ export const updateUserCustomer = async (c: Context): Promise<Response> => {
 
     if (!existingUser) {
       c.status(404)
-      return errorResponse(c, 'User customer not found')
+      return errorResponse(c, 'Pengguna tidak ditemukan')
     }
 
     // Check for email or phone duplication
@@ -234,7 +234,7 @@ export const updateUserCustomer = async (c: Context): Promise<Response> => {
 
     if (duplicateUser) {
       c.status(400)
-      return errorResponse(c, 'Email or phone number already in use')
+      return errorResponse(c, 'Email atau nomor HP sudah digunakan')
     }
 
     let updatedUser = {
@@ -258,12 +258,12 @@ export const updateUserCustomer = async (c: Context): Promise<Response> => {
       .where(eq(usersTable.id, userId));
 
     c.status(200)
-    return successMessageResponse(c, 'User customer updated successfully')
+    return successMessageResponse(c, 'Berhasil mengubah data pengguna')
 
   } catch (err) {
     console.log(err)
     throw new HTTPException(400, { 
-      message: 'Error updating user',
+      message: 'Gagal mengubah data pengguna',
       cause: err
     });
   }
